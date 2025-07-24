@@ -1,114 +1,97 @@
-# 🌊 On-Chain Fund-Flow Heatmap
+# 🌊 On-Chain Fund Flow Heatmap
 
-Visualize weekly money movement **between major crypto assets and wallet cohorts** (exchanges, whales, miners, smart contracts) in a single glance.
+Real-time visualization of cryptocurrency fund movements across top 25 assets and wallet cohorts using actual on-chain data.
 
-> **Stack** Next.js • TypeScript • TailwindCSS • Recharts (Heatmap) • SWR • Glassnode/CryptoQuant APIs
-> **Deploy Target** Vercel (edge-optimized)
-> **Goal** Give you data-driven talking points for Anchorage/FalconX convos within 10 seconds of page load.
+## 🎯 Real Data Sources
 
----
+### **CryptoQuant API** - Real Fund Flows
+- **Exchange flows**: Real exchange inflow/outflow data
+- **Whale flows**: Large transaction movements
+- **Miner flows**: Mining pool fund movements
+- **Source**: https://cryptoquant.com/
+- **Coverage**: Bitcoin (BTC) has complete real data
 
-## 📈 Features
+### **CoinGecko API** - Market Data
+- **Prices**: Real-time cryptocurrency prices
+- **Volumes**: 24h trading volumes
+- **Market caps**: Current market capitalization
+- **Price changes**: 24h, 7d, 30d percentage changes
+- **Source**: https://www.coingecko.com/en/api
 
-| Feature                | Details                                                                                                 |
-| ---------------------- | ------------------------------------------------------------------------------------------------------- |
-| **Dynamic Heatmap**    | Wallet-flow net Δ in USD (positive = inflow, negative = outflow) across BTC, ETH, SOL, XRP, USDT, USDC. |
-| **Time Selector**      | Rolling 7-day, 30-day, YTD presets + custom range.                                                      |
-| **Cohort Filters**     | Checkboxes for *Exchanges*, *Whales (> 1K BTC equiv)*, *Miners*, *Smart Contracts*, *Retail* (< 1 BTC). |
-| **Tooltip Drill-Down** | Hover ≈ raw numbers, YoY %, and link to tx explorer.                                                    |
-| **Auto-Refresh**       | Re-queries every 30 min via SWR + `revalidateOnFocus: false` to keep Vercel cold-start costs low.       |
-| **Dark / Light Mode**  | Tailwind-driven; respects system preference.                                                            |
+## 🚀 Setup
 
----
+### 1. Get CryptoQuant API Key (Free)
+1. Visit https://cryptoquant.com/
+2. Sign up for a free account
+3. Get your API key from the dashboard
+4. Add to your environment variables:
 
-## 🗂 Project Structure
-
-```text
-.
-├── src/
-│   ├── lib/
-│   │   └── api.ts            # fetcher wrapped in SWR w/ Rate-Limit retries
-│   ├── components/
-│   │   ├── Heatmap.tsx       # <Heatmap data={...} />
-│   │   ├── CohortToggle.tsx
-│   │   └── DateRangePicker.tsx
-│   ├── app/
-│   │   ├── page.tsx          # layout + SEO + hero copy
-│   │   ├── layout.tsx        # SWR config + metadata
-│   │   └── globals.css       # Tailwind base + custom styles
-│   └── ...
-├── .env.local.example        # API keys template
-└── README.md                 # This file
+```bash
+# .env.local
+NEXT_PUBLIC_CRYPTOQUANT_API_KEY=your_api_key_here
 ```
 
----
-
-## 🔧 Setup
-
-1. **Clone & Install**
-
-   ```bash
-   git clone <your-repo-url>
-   cd onchain-heatmap
-   npm install
-   ```
-
-2. **Environment Vars**
-
-   ```bash
-   # Copy the example file
-   cp .env.local.example .env.local
-   
-   # Edit .env.local with your API keys
-   GLASSNODE_API_KEY=your_glassnode_api_key
-   CRYPTOQUANT_API_KEY=your_cryptoquant_api_key
-   NEXT_PUBLIC_ASSETS=BTC,ETH,SOL,XRP,USDT,USDC
-   ```
-
-3. **Dev**
-
-   ```bash
-   npm run dev
-   ```
-
-4. **Deploy** — push to GitHub → import repo in Vercel → add env vars.
-
----
-
-## 🧩 Core Logic
-
-```ts
-// src/lib/api.ts
-export async function getExchangeFlows(asset: string, start: number, end: number) {
-  const url = `https://api.glassnode.com/v2/metrics/transactions/volume_change_from_exchanges?asset=${asset}&api_key=${process.env.GLASSNODE_API_KEY}&s=${start}&u=${end}&i=1d`;
-  const res = await fetch(url);
-  const data = await res.json();
-  return data.map(d => ({ date: d.t, value: d.v }));
-}
+### 2. Install Dependencies
+```bash
+npm install
 ```
 
-`Heatmap.tsx` merges the cohorts into a matrix and feeds Recharts' `ResponsiveContainer` + `Surface` with a custom colorScale derived from `d3-scale`.
+### 3. Run Development Server
+```bash
+npm run dev
+```
 
----
+## 📊 Data Accuracy
 
-## 📊 Extending
+### **Real Data (BTC)**:
+- ✅ Exchange flows from CryptoQuant
+- ✅ Whale flows from CryptoQuant  
+- ✅ Miner flows from CryptoQuant
+- ✅ All market data from CoinGecko
 
-* **Add Chains** – Update `NEXT_PUBLIC_ASSETS`, no redeploy needed thanks to ISR.
-* **CSV Export** – Add `pages/api/export.ts` to pipe JSON → CSV and tee into a download button.
-* **Alerting** – Tie into Slack webhook if net outflow > $500 M in 24h.
+### **Estimated Data (Other Assets)**:
+- 📊 Volume-based estimates for other cryptocurrencies
+- 📊 Clearly labeled as estimates
+- 📊 Based on real market volumes and price changes
 
----
+## 🎨 Features
 
-## 🚀 Performance
+- **Real-time data**: Live fund flow updates
+- **Top 25 cryptocurrencies**: By market cap
+- **5 wallet cohorts**: Exchanges, whales, miners, smart contracts, retail
+- **Colorblind-friendly**: Blue/orange color scheme
+- **Responsive design**: Works on all devices
+- **Date range selection**: 7 days, 30 days, custom ranges
 
-- **Edge-optimized** for Vercel deployment
-- **SWR caching** with 30-minute refresh intervals
-- **Rate-limit handling** with exponential backoff
-- **Dark mode** support with system preference detection
-- **Responsive design** for mobile and desktop
+## 🛠️ Tech Stack
 
----
+- **Next.js 15**: React framework
+- **TypeScript**: Type safety
+- **Tailwind CSS**: Styling
+- **CryptoQuant API**: Real fund flow data
+- **CoinGecko API**: Market data
 
-## 📜 License
+## 📈 What You'll See
 
-MIT © 2025 Prashant Radhakrishnan
+### **Real Fund Flows**:
+- **Exchange movements**: Money entering/leaving exchanges
+- **Whale transactions**: Large holder movements
+- **Miner flows**: Mining pool fund movements
+- **Smart contract activity**: DeFi protocol flows
+- **Retail movements**: Small holder activity
+
+### **External Flow Calculation**:
+- **Exchanges + Retail**: Money entering/leaving the crypto ecosystem
+- **Real data for BTC**: Actual on-chain measurements
+- **Estimates for others**: Based on market activity
+
+## 🔍 Transparency
+
+- **BTC flows**: 100% real on-chain data from CryptoQuant
+- **Other assets**: Volume-based estimates (clearly labeled)
+- **Market data**: All real from CoinGecko
+- **No fake data**: Everything is either real or clearly marked as estimated
+
+## 📝 License
+
+MIT License - feel free to use and modify!

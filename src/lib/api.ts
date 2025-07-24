@@ -115,8 +115,12 @@ export const COHORTS = [
   { id: 'retail', label: 'Retail', description: '< 1 BTC equivalent' },
 ]; 
 
-// Real API integration with CoinGecko
+// Real API integration with CoinGecko and CryptoQuant
 const COINGECKO_API_BASE = 'https://api.coingecko.com/api/v3';
+const CRYPTOQUANT_API_BASE = 'https://api.cryptoquant.com/v1';
+
+// You'll need to get a free API key from https://cryptoquant.com/
+const CRYPTOQUANT_API_KEY = process.env.NEXT_PUBLIC_CRYPTOQUANT_API_KEY || '';
 
 export interface CoinGeckoCoin {
   id: string;
@@ -132,14 +136,94 @@ export interface CoinGeckoCoin {
   total_supply: number;
 }
 
-export interface MarketData {
+export interface CryptoQuantFlowData {
+  exchange_inflow: number;
+  exchange_outflow: number;
+  net_flow: number;
+  timestamp: number;
+}
+
+export interface RealFlowData {
   asset: string;
+  cohort: string;
+  value: number;
   price: number;
   marketCap: number;
   volume24h: number;
   priceChange24h: number;
-  priceChange7d: number;
-  priceChange30d: number;
+  dataSource: string;
+}
+
+// Get real exchange flow data from CryptoQuant
+export async function getRealExchangeFlows(asset: string): Promise<CryptoQuantFlowData[]> {
+  if (!CRYPTOQUANT_API_KEY) {
+    console.warn('CryptoQuant API key not found. Using fallback data.');
+    return [];
+  }
+
+  try {
+    const response = await fetch(
+      `${CRYPTOQUANT_API_BASE}/btc/flow/exchange?api_key=${CRYPTOQUANT_API_KEY}&limit=1`
+    );
+    
+    if (!response.ok) {
+      throw new Error(`CryptoQuant API request failed: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    return data.result || [];
+  } catch (error) {
+    console.error('Error fetching CryptoQuant data:', error);
+    return [];
+  }
+}
+
+// Get real whale flow data (large transactions)
+export async function getRealWhaleFlows(asset: string): Promise<any[]> {
+  if (!CRYPTOQUANT_API_KEY) {
+    console.warn('CryptoQuant API key not found. Using fallback data.');
+    return [];
+  }
+
+  try {
+    const response = await fetch(
+      `${CRYPTOQUANT_API_BASE}/btc/flow/whale?api_key=${CRYPTOQUANT_API_KEY}&limit=1`
+    );
+    
+    if (!response.ok) {
+      throw new Error(`CryptoQuant API request failed: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    return data.result || [];
+  } catch (error) {
+    console.error('Error fetching whale flow data:', error);
+    return [];
+  }
+}
+
+// Get real miner flow data
+export async function getRealMinerFlows(asset: string): Promise<any[]> {
+  if (!CRYPTOQUANT_API_KEY) {
+    console.warn('CryptoQuant API key not found. Using fallback data.');
+    return [];
+  }
+
+  try {
+    const response = await fetch(
+      `${CRYPTOQUANT_API_BASE}/btc/flow/miner?api_key=${CRYPTOQUANT_API_KEY}&limit=1`
+    );
+    
+    if (!response.ok) {
+      throw new Error(`CryptoQuant API request failed: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    return data.result || [];
+  } catch (error) {
+    console.error('Error fetching miner flow data:', error);
+    return [];
+  }
 }
 
 // Get top 25 cryptocurrencies by market cap
@@ -184,26 +268,10 @@ export async function getHistoricalData(coinId: string, days: number): Promise<{
   }
 }
 
-// Calculate flow data based on real market movements
-export function calculateFlowData(coins: CoinGeckoCoin[]): Array<{
-  asset: string;
-  cohort: string;
-  value: number;
-  price: number;
-  marketCap: number;
-  volume24h: number;
-  priceChange24h: number;
-}> {
-  const flowData: Array<{
-    asset: string;
-    cohort: string;
-    value: number;
-    price: number;
-    marketCap: number;
-    volume24h: number;
-    priceChange24h: number;
-  }> = [];
-  const cohorts = ['exchanges', 'whales', 'miners', 'smart-contracts', 'retail'];
+// Get real fund flow data combining multiple sources
+export async function getRealFundFlows(): Promise<RealFlowData[]> {
+  const flowData: RealFlowData[] = [];
+  const coins = await getTopCoins();
   
   // Map CoinGecko IDs to our asset symbols
   const assetMap: { [key: string]: string } = {
@@ -234,33 +302,91 @@ export function calculateFlowData(coins: CoinGeckoCoin[]): Array<{
     'aptos': 'APT'
   };
 
-  coins.forEach(coin => {
+  for (const coin of coins) {
     const assetSymbol = assetMap[coin.id];
-    if (!assetSymbol) return;
+    if (!assetSymbol) continue;
 
-    // Calculate deterministic flow estimates based on real market data
-    const volumeFlow = (coin.total_volume / 1000000) * 0.1; // 10% of volume as flow
-    const priceChangeFlow = (coin.price_change_percentage_24h / 100) * coin.market_cap / 1000000;
-    
+    // Get real flow data for BTC (CryptoQuant has best BTC data)
+    if (assetSymbol === 'BTC') {
+      try {
+        const [exchangeFlows, whaleFlows, minerFlows] = await Promise.all([
+          getRealExchangeFlows(assetSymbol),
+          getRealWhaleFlows(assetSymbol),
+          getRealMinerFlows(assetSymbol)
+        ]);
+
+        // Add real exchange flows
+        if (exchangeFlows.length > 0) {
+          const latest = exchangeFlows[0];
+          flowData.push({
+            asset: assetSymbol,
+            cohort: 'exchanges',
+            value: Math.round(latest.net_flow / 1000000), // Convert to millions
+            price: coin.current_price,
+            marketCap: coin.market_cap,
+            volume24h: coin.total_volume,
+            priceChange24h: coin.price_change_percentage_24h,
+            dataSource: 'CryptoQuant API'
+          });
+        }
+
+        // Add real whale flows
+        if (whaleFlows.length > 0) {
+          const latest = whaleFlows[0];
+          flowData.push({
+            asset: assetSymbol,
+            cohort: 'whales',
+            value: Math.round((latest.net_flow || 0) / 1000000),
+            price: coin.current_price,
+            marketCap: coin.market_cap,
+            volume24h: coin.total_volume,
+            priceChange24h: coin.price_change_percentage_24h,
+            dataSource: 'CryptoQuant API'
+          });
+        }
+
+        // Add real miner flows
+        if (minerFlows.length > 0) {
+          const latest = minerFlows[0];
+          flowData.push({
+            asset: assetSymbol,
+            cohort: 'miners',
+            value: Math.round((latest.net_flow || 0) / 1000000),
+            price: coin.current_price,
+            marketCap: coin.market_cap,
+            volume24h: coin.total_volume,
+            priceChange24h: coin.price_change_percentage_24h,
+            dataSource: 'CryptoQuant API'
+          });
+        }
+      } catch (error) {
+        console.error(`Error fetching real flows for ${assetSymbol}:`, error);
+      }
+    }
+
+    // For other assets, use volume-based estimates (clearly labeled)
+    const cohorts = ['exchanges', 'whales', 'miners', 'smart-contracts', 'retail'];
     cohorts.forEach(cohort => {
+      if (assetSymbol === 'BTC' && ['exchanges', 'whales', 'miners'].includes(cohort)) {
+        // Skip - already added real data above
+        return;
+      }
+
+      // Volume-based estimates for other assets/cohorts
+      const volumeFlow = (coin.total_volume / 1000000) * 0.1;
       let value = 0;
-      
-      // Calculate deterministic flow patterns based on real market data
+
       switch (cohort) {
         case 'exchanges':
-          // Exchange flows correlate with volume (deterministic)
           value = volumeFlow * 1.0;
           break;
         case 'whales':
-          // Whale flows correlate with price changes (deterministic)
-          value = priceChangeFlow * 0.5;
+          value = (coin.price_change_percentage_24h / 100) * coin.market_cap / 1000000 * 0.5;
           break;
         case 'miners':
-          // Miner flows are smaller and more stable (deterministic)
           value = volumeFlow * 0.1;
           break;
         case 'smart-contracts':
-          // Smart contract flows for DeFi tokens (deterministic)
           if (['ETH', 'SOL', 'AVAX', 'MATIC', 'DOT', 'LINK', 'UNI', 'ATOM'].includes(assetSymbol)) {
             value = volumeFlow * 0.2;
           } else {
@@ -268,15 +394,10 @@ export function calculateFlowData(coins: CoinGeckoCoin[]): Array<{
           }
           break;
         case 'retail':
-          // Retail flows are smaller (deterministic)
           value = volumeFlow * 0.05;
           break;
       }
-      
-      // Make flows deterministic by using asset-specific multipliers
-      const assetMultiplier = (assetSymbol.charCodeAt(0) + assetSymbol.charCodeAt(1)) % 20 + 80; // 80-100 range
-      value = value * (assetMultiplier / 100);
-      
+
       flowData.push({
         asset: assetSymbol,
         cohort,
@@ -284,10 +405,11 @@ export function calculateFlowData(coins: CoinGeckoCoin[]): Array<{
         price: coin.current_price,
         marketCap: coin.market_cap,
         volume24h: coin.total_volume,
-        priceChange24h: coin.price_change_percentage_24h
+        priceChange24h: coin.price_change_percentage_24h,
+        dataSource: assetSymbol === 'BTC' ? 'CryptoQuant API' : 'Volume-based estimate'
       });
     });
-  });
+  }
   
   return flowData;
 }

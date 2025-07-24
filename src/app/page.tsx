@@ -5,7 +5,7 @@ import { format } from 'date-fns';
 import DateRangePicker from '@/components/DateRangePicker';
 import CohortToggle from '@/components/CohortToggle';
 import Heatmap from '@/components/Heatmap';
-import { getTopCoins, calculateFlowData } from '@/lib/api';
+import { getTopCoins, getRealFundFlows } from '@/lib/api';
 
 export interface HeatmapData {
   asset: string;
@@ -37,9 +37,8 @@ export default function HomePage() {
         setIsLoading(true);
         setError(null);
         
-        // Fetch real data from CoinGecko
-        const coins = await getTopCoins();
-        const flowData = calculateFlowData(coins);
+        // Fetch real fund flow data
+        const flowData = await getRealFundFlows();
         
         // Convert to HeatmapData format
         const heatmapDataFormatted: HeatmapData[] = flowData.map(item => ({
@@ -61,7 +60,7 @@ export default function HomePage() {
     };
 
     loadData();
-  }, []);
+  }, [startDate, endDate]);
 
   const handleCohortChange = (cohort: string, checked: boolean) => {
     if (checked) {
@@ -99,7 +98,7 @@ export default function HomePage() {
                 Real-time visualization of crypto money movement across top 25 assets and wallet cohorts
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                📊 Real market data from CoinGecko API • Flow estimates based on volume & price changes • Last updated: {format(lastUpdated, 'MMM dd, HH:mm')}
+                📊 Real fund flows from CryptoQuant API • Market data from CoinGecko • Last updated: {format(lastUpdated, 'MMM dd, HH:mm')}
               </p>
             </div>
             <div className="flex items-center space-x-4">
@@ -184,11 +183,15 @@ export default function HomePage() {
               <div className="space-y-2 text-xs text-gray-600 dark:text-gray-400">
                 <div className="flex items-center space-x-2">
                   <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <span>CoinGecko API</span>
+                  <span>CryptoQuant API</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                  <span>Real Market Data</span>
+                  <span>CoinGecko API</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                  <span>Real Fund Flows</span>
                 </div>
                 <div className="pt-2 text-xs text-gray-500">
                   Last updated: {format(lastUpdated, 'MMM dd, HH:mm')}
@@ -241,11 +244,11 @@ export default function HomePage() {
         <div className="mt-6 text-center">
           <div className="text-sm text-gray-500 dark:text-gray-400">
             <p>
-              Real-time data powered by CoinGecko API • 
+              Real fund flows from CryptoQuant API • Market data from CoinGecko • 
               Built with Next.js, TypeScript & TailwindCSS
             </p>
             <p className="mt-1">
-              Flow estimates calculated from real market volume and price change data
+              BTC flows are real on-chain data, other assets use volume-based estimates
             </p>
           </div>
         </div>
