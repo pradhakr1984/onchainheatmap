@@ -5,7 +5,7 @@ import { subDays, format } from 'date-fns';
 import Heatmap, { HeatmapData } from '@/components/Heatmap';
 import CohortToggle from '@/components/CohortToggle';
 import DateRangePicker from '@/components/DateRangePicker';
-import { getAssets, COHORTS } from '@/lib/api';
+import { COHORTS } from '@/lib/api';
 
 // Generate simple, guaranteed data
 const generateData = () => {
@@ -105,7 +105,7 @@ export default function HomePage() {
       {/* Header */}
       <header className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
+          <div className="flex justify-between items-center py-4">
             <div>
               <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                 🌊 On-Chain Fund-Flow Heatmap
@@ -124,9 +124,9 @@ export default function HomePage() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         {/* Summary Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between">
               <div>
@@ -174,7 +174,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-5 gap-8">
+        <div className="grid grid-cols-1 xl:grid-cols-5 gap-6">
           {/* Sidebar Controls */}
           <div className="xl:col-span-1 space-y-6">
             <DateRangePicker
@@ -221,7 +221,7 @@ export default function HomePage() {
                 </p>
               </div>
               
-              <div className="p-8">
+              <div className="p-4">
                 {isLoading ? (
                   <div className="flex items-center justify-center h-64">
                     <div className="text-center">
@@ -243,7 +243,7 @@ export default function HomePage() {
         </div>
 
         {/* Footer Info */}
-        <div className="mt-12 text-center">
+        <div className="mt-6 text-center">
           <div className="text-sm text-gray-500 dark:text-gray-400">
             <p>
               Data powered by Glassnode & CryptoQuant APIs • 

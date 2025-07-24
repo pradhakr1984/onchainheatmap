@@ -17,7 +17,7 @@ interface HeatmapProps {
   onCellClick?: (data: HeatmapData) => void;
 }
 
-export default function Heatmap({ data, selectedCohorts, onCellClick }: HeatmapProps) {
+export default function Heatmap({ onCellClick }: HeatmapProps) {
   // Top 20 cryptocurrencies by market cap - all values in millions
   const mockData = [
     // BTC
@@ -168,22 +168,22 @@ export default function Heatmap({ data, selectedCohorts, onCellClick }: HeatmapP
 
   return (
     <div className="w-full">
-      {/* Debug info */}
-      <div className="mb-6 p-4 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-lg text-sm">
-        <strong>Working Heatmap:</strong> {mockData.length} data points loaded • Top 19 cryptocurrencies by market cap • All values in millions (M)
+      {/* Compact Debug info */}
+      <div className="mb-4 p-2 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded text-xs">
+        <strong>Heatmap:</strong> {mockData.length} data points • Top 19 cryptocurrencies • All values in millions (M)
       </div>
 
-      {/* Large, Easy-to-Read Table */}
-      <div className="border-2 border-gray-300 rounded-xl overflow-hidden shadow-lg overflow-x-auto">
-        <table className="w-full min-w-[1400px]">
+      {/* Compact Table */}
+      <div className="border border-gray-300 rounded-lg overflow-hidden shadow-sm overflow-x-auto">
+        <table className="w-full min-w-[1200px]">
           {/* Header */}
           <thead>
             <tr className="bg-gray-100 dark:bg-gray-700">
-              <th className="p-4 text-left font-bold text-gray-700 dark:text-gray-300 border-r border-gray-300 text-base">
+              <th className="p-2 text-left font-bold text-gray-700 dark:text-gray-300 border-r border-gray-300 text-sm">
                 Cohort
               </th>
               {assets.map(asset => (
-                <th key={asset} className="p-4 text-center font-bold text-gray-700 dark:text-gray-300 border-r border-gray-300 text-sm">
+                <th key={asset} className="p-2 text-center font-bold text-gray-700 dark:text-gray-300 border-r border-gray-300 text-xs">
                   {asset}
                 </th>
               ))}
@@ -194,7 +194,7 @@ export default function Heatmap({ data, selectedCohorts, onCellClick }: HeatmapP
           <tbody>
             {cohorts.map(cohort => (
               <tr key={cohort} className="border-t border-gray-300">
-                <td className="p-4 font-bold text-gray-700 dark:text-gray-300 border-r border-gray-300 text-base">
+                <td className="p-2 font-bold text-gray-700 dark:text-gray-300 border-r border-gray-300 text-sm">
                   {cohort.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
                 </td>
                 {assets.map(asset => {
@@ -202,7 +202,7 @@ export default function Heatmap({ data, selectedCohorts, onCellClick }: HeatmapP
                   
                   if (!cellData) {
                     return (
-                      <td key={asset} className="p-4 text-center text-gray-400 border-r border-gray-300 text-sm">
+                      <td key={asset} className="p-2 text-center text-gray-400 border-r border-gray-300 text-xs">
                         N/A
                       </td>
                     );
@@ -211,14 +211,14 @@ export default function Heatmap({ data, selectedCohorts, onCellClick }: HeatmapP
                   return (
                     <td 
                       key={asset} 
-                      className={`p-4 text-center cursor-pointer hover:scale-105 transition-transform border-r border-gray-300 ${cellData.color} min-w-[100px]`}
-                      onClick={() => onCellClick?.(cellData as any)}
+                      className={`p-2 text-center cursor-pointer hover:scale-105 transition-transform border-r border-gray-300 ${cellData.color} min-w-[80px]`}
+                      onClick={() => onCellClick?.({ ...cellData, date: new Date().toISOString(), yoyChange: 0 })}
                     >
-                      <div className="text-white font-bold text-lg mb-1">
+                      <div className="text-white font-bold text-sm">
                         {cellData.value > 0 ? '+' : '-'}{formatValue(cellData.value)}
                       </div>
-                      <div className="text-white/90 text-xs font-medium">
-                        {cellData.value > 0 ? 'Inflow' : 'Outflow'}
+                      <div className="text-white/90 text-xs">
+                        {cellData.value > 0 ? 'In' : 'Out'}
                       </div>
                     </td>
                   );
@@ -229,18 +229,18 @@ export default function Heatmap({ data, selectedCohorts, onCellClick }: HeatmapP
         </table>
       </div>
 
-      {/* Enhanced Legend */}
-      <div className="mt-8 flex items-center justify-center space-x-8 text-base">
-        <div className="flex items-center space-x-3">
-          <div className="w-6 h-6 bg-green-500 rounded-lg"></div>
-          <span className="text-gray-700 dark:text-gray-300 font-semibold">Inflow</span>
+      {/* Compact Legend */}
+      <div className="mt-4 flex items-center justify-center space-x-6 text-sm">
+        <div className="flex items-center space-x-2">
+          <div className="w-4 h-4 bg-green-500 rounded"></div>
+          <span className="text-gray-700 dark:text-gray-300 font-medium">Inflow</span>
         </div>
-        <div className="flex items-center space-x-3">
-          <div className="w-6 h-6 bg-red-500 rounded-lg"></div>
-          <span className="text-gray-700 dark:text-gray-300 font-semibold">Outflow</span>
+        <div className="flex items-center space-x-2">
+          <div className="w-4 h-4 bg-red-500 rounded"></div>
+          <span className="text-gray-700 dark:text-gray-300 font-medium">Outflow</span>
         </div>
-        <div className="text-gray-500 dark:text-gray-400 text-sm bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">
-          Click cells for details • Scroll horizontally to see all assets
+        <div className="text-gray-500 dark:text-gray-400 text-xs">
+          Click cells for details
         </div>
       </div>
     </div>
