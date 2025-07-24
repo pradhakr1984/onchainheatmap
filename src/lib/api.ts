@@ -238,43 +238,44 @@ export function calculateFlowData(coins: CoinGeckoCoin[]): Array<{
     const assetSymbol = assetMap[coin.id];
     if (!assetSymbol) return;
 
-    // Calculate flow estimates based on real market data
+    // Calculate deterministic flow estimates based on real market data
     const volumeFlow = (coin.total_volume / 1000000) * 0.1; // 10% of volume as flow
     const priceChangeFlow = (coin.price_change_percentage_24h / 100) * coin.market_cap / 1000000;
     
     cohorts.forEach(cohort => {
       let value = 0;
       
-      // Simulate different flow patterns based on real market data
+      // Calculate deterministic flow patterns based on real market data
       switch (cohort) {
         case 'exchanges':
-          // Exchange flows correlate with volume
-          value = volumeFlow * (0.8 + Math.random() * 0.4);
+          // Exchange flows correlate with volume (deterministic)
+          value = volumeFlow * 1.0;
           break;
         case 'whales':
-          // Whale flows correlate with price changes
-          value = priceChangeFlow * (0.5 + Math.random() * 0.5);
+          // Whale flows correlate with price changes (deterministic)
+          value = priceChangeFlow * 0.5;
           break;
         case 'miners':
-          // Miner flows are smaller and more stable
-          value = volumeFlow * 0.1 * (0.5 + Math.random() * 0.5);
+          // Miner flows are smaller and more stable (deterministic)
+          value = volumeFlow * 0.1;
           break;
         case 'smart-contracts':
-          // Smart contract flows for DeFi tokens
+          // Smart contract flows for DeFi tokens (deterministic)
           if (['ETH', 'SOL', 'AVAX', 'MATIC', 'DOT', 'LINK', 'UNI', 'ATOM'].includes(assetSymbol)) {
-            value = volumeFlow * 0.2 * (0.5 + Math.random() * 0.5);
+            value = volumeFlow * 0.2;
           } else {
-            value = volumeFlow * 0.05 * (0.5 + Math.random() * 0.5);
+            value = volumeFlow * 0.05;
           }
           break;
         case 'retail':
-          // Retail flows are smaller
-          value = volumeFlow * 0.05 * (0.5 + Math.random() * 0.5);
+          // Retail flows are smaller (deterministic)
+          value = volumeFlow * 0.05;
           break;
       }
       
-      // Add some randomness but keep it realistic
-      value = value * (0.8 + Math.random() * 0.4);
+      // Make flows deterministic by using asset-specific multipliers
+      const assetMultiplier = (assetSymbol.charCodeAt(0) + assetSymbol.charCodeAt(1)) % 20 + 80; // 80-100 range
+      value = value * (assetMultiplier / 100);
       
       flowData.push({
         asset: assetSymbol,

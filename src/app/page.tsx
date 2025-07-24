@@ -99,7 +99,7 @@ export default function HomePage() {
                 Real-time visualization of crypto money movement across top 25 assets and wallet cohorts
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                📊 Real-time data from CoinGecko API • Last updated: {format(lastUpdated, 'MMM dd, HH:mm')}
+                📊 Real market data from CoinGecko API • Flow estimates based on volume & price changes • Last updated: {format(lastUpdated, 'MMM dd, HH:mm')}
               </p>
             </div>
             <div className="flex items-center space-x-4">
@@ -245,7 +245,7 @@ export default function HomePage() {
               Built with Next.js, TypeScript & TailwindCSS
             </p>
             <p className="mt-1">
-              Flow calculations based on actual market volume and price movements
+              Flow estimates calculated from real market volume and price change data
             </p>
           </div>
         </div>
