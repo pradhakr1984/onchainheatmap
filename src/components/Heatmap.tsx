@@ -15,144 +15,80 @@ interface HeatmapProps {
   data: HeatmapData[];
   selectedCohorts: string[];
   onCellClick?: (data: HeatmapData) => void;
+  startDate?: Date;
+  endDate?: Date;
 }
 
-export default function Heatmap({ onCellClick }: HeatmapProps) {
-  // Top 20 cryptocurrencies by market cap - all values in millions
-  const mockData = [
-    // BTC
-    { asset: 'BTC', cohort: 'exchanges', value: 250, color: 'bg-green-500' },
-    { asset: 'BTC', cohort: 'whales', value: -180, color: 'bg-red-500' },
-    { asset: 'BTC', cohort: 'miners', value: 120, color: 'bg-green-400' },
-    { asset: 'BTC', cohort: 'smart-contracts', value: -50, color: 'bg-red-400' },
-    { asset: 'BTC', cohort: 'retail', value: 30, color: 'bg-green-300' },
+export default function Heatmap({ onCellClick, startDate, endDate }: HeatmapProps) {
+  // Generate data based on date range
+  const generateMockData = () => {
+    const assets = [
+      'BTC', 'ETH', 'SOL', 'XRP', 'USDT', 'USDC', 'BNB', 'ADA', 'AVAX', 'DOGE',
+      'MATIC', 'DOT', 'LINK', 'UNI', 'ATOM', 'LTC', 'ETC', 'XLM', 'ALGO'
+    ];
+    const cohorts = ['exchanges', 'whales', 'miners', 'smart-contracts', 'retail'];
     
-    // ETH
-    { asset: 'ETH', cohort: 'exchanges', value: 180, color: 'bg-green-500' },
-    { asset: 'ETH', cohort: 'whales', value: -220, color: 'bg-red-500' },
-    { asset: 'ETH', cohort: 'miners', value: 80, color: 'bg-green-400' },
-    { asset: 'ETH', cohort: 'smart-contracts', value: 350, color: 'bg-green-600' },
-    { asset: 'ETH', cohort: 'retail', value: -40, color: 'bg-red-300' },
+    // Calculate scale factor based on date range
+    const daysDiff = startDate && endDate ? 
+      Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) : 7;
+    const scaleFactor = daysDiff / 7;
     
-    // SOL
-    { asset: 'SOL', cohort: 'exchanges', value: 90, color: 'bg-green-400' },
-    { asset: 'SOL', cohort: 'whales', value: -120, color: 'bg-red-400' },
-    { asset: 'SOL', cohort: 'miners', value: 45, color: 'bg-green-300' },
-    { asset: 'SOL', cohort: 'smart-contracts', value: 180, color: 'bg-green-500' },
-    { asset: 'SOL', cohort: 'retail', value: -25, color: 'bg-red-300' },
+         const mockData: Array<{asset: string; cohort: string; value: number; color: string}> = [];
     
-    // XRP
-    { asset: 'XRP', cohort: 'exchanges', value: 60, color: 'bg-green-400' },
-    { asset: 'XRP', cohort: 'whales', value: -90, color: 'bg-red-400' },
-    { asset: 'XRP', cohort: 'miners', value: 30, color: 'bg-green-300' },
-    { asset: 'XRP', cohort: 'smart-contracts', value: 120, color: 'bg-green-500' },
-    { asset: 'XRP', cohort: 'retail', value: -15, color: 'bg-red-300' },
+    // Base flow ranges (for 7 days)
+    const baseFlowRanges = {
+      'BTC': { exchanges: [200, 300], whales: [-300, -100], miners: [80, 150], 'smart-contracts': [-80, 50], retail: [20, 60] },
+      'ETH': { exchanges: [150, 250], whales: [-250, -150], miners: [60, 120], 'smart-contracts': [200, 400], retail: [-60, 20] },
+      'SOL': { exchanges: [70, 120], whales: [-150, -80], miners: [30, 60], 'smart-contracts': [120, 200], retail: [-40, 10] },
+      'XRP': { exchanges: [50, 90], whales: [-120, -60], miners: [20, 45], 'smart-contracts': [80, 150], retail: [-30, 15] },
+      'USDT': { exchanges: [300, 500], whales: [-700, -400], miners: [100, 200], 'smart-contracts': [400, 600], retail: [-100, -40] },
+      'USDC': { exchanges: [250, 400], whales: [-600, -300], miners: [80, 180], 'smart-contracts': [300, 500], retail: [-80, -30] },
+      'BNB': { exchanges: [120, 180], whales: [-250, -150], miners: [50, 90], 'smart-contracts': [200, 300], retail: [-50, 20] },
+      'ADA': { exchanges: [60, 100], whales: [-140, -80], miners: [25, 55], 'smart-contracts': [100, 180], retail: [-35, 15] },
+      'AVAX': { exchanges: [50, 90], whales: [-120, -70], miners: [20, 45], 'smart-contracts': [90, 160], retail: [-30, 10] },
+      'DOGE': { exchanges: [30, 60], whales: [-80, -40], miners: [15, 30], 'smart-contracts': [60, 100], retail: [-20, 10] },
+      'MATIC': { exchanges: [40, 75], whales: [-100, -50], miners: [20, 40], 'smart-contracts': [80, 130], retail: [-25, 15] },
+      'DOT': { exchanges: [45, 80], whales: [-110, -60], miners: [22, 42], 'smart-contracts': [90, 140], retail: [-28, 12] },
+      'LINK': { exchanges: [55, 95], whales: [-130, -70], miners: [25, 48], 'smart-contracts': [100, 160], retail: [-32, 14] },
+      'UNI': { exchanges: [35, 65], whales: [-90, -45], miners: [18, 33], 'smart-contracts': [70, 110], retail: [-22, 9] },
+      'ATOM': { exchanges: [40, 75], whales: [-100, -55], miners: [20, 40], 'smart-contracts': [80, 130], retail: [-27, 11] },
+      'LTC': { exchanges: [25, 50], whales: [-70, -35], miners: [12, 26], 'smart-contracts': [50, 90], retail: [-18, 7] },
+      'ETC': { exchanges: [20, 45], whales: [-65, -30], miners: [10, 23], 'smart-contracts': [45, 80], retail: [-16, 6] },
+      'XLM': { exchanges: [15, 40], whales: [-60, -25], miners: [8, 20], 'smart-contracts': [40, 70], retail: [-14, 5] },
+      'ALGO': { exchanges: [12, 35], whales: [-55, -20], miners: [6, 18], 'smart-contracts': [35, 60], retail: [-12, 4] },
+    };
+
+    assets.forEach(asset => {
+      cohorts.forEach(cohort => {
+        const range = baseFlowRanges[asset as keyof typeof baseFlowRanges]?.[cohort as keyof typeof baseFlowRanges.BTC] || [-100, 100];
+        const baseValue = Math.random() * (range[1] - range[0]) + range[0];
+        const scaledValue = Math.round(baseValue * scaleFactor);
+        
+        // Determine color based on value
+        let color = 'bg-gray-400';
+        if (scaledValue > 0) {
+          if (scaledValue > 200) color = 'bg-green-600';
+          else if (scaledValue > 100) color = 'bg-green-500';
+          else color = 'bg-green-400';
+        } else {
+          if (scaledValue < -200) color = 'bg-red-600';
+          else if (scaledValue < -100) color = 'bg-red-500';
+          else color = 'bg-red-400';
+        }
+        
+        mockData.push({
+          asset,
+          cohort,
+          value: scaledValue,
+          color
+        });
+      });
+    });
     
-    // USDT
-    { asset: 'USDT', cohort: 'exchanges', value: 400, color: 'bg-green-600' },
-    { asset: 'USDT', cohort: 'whales', value: -600, color: 'bg-red-600' },
-    { asset: 'USDT', cohort: 'miners', value: 150, color: 'bg-green-500' },
-    { asset: 'USDT', cohort: 'smart-contracts', value: 500, color: 'bg-green-600' },
-    { asset: 'USDT', cohort: 'retail', value: -80, color: 'bg-red-400' },
-    
-    // USDC
-    { asset: 'USDC', cohort: 'exchanges', value: 320, color: 'bg-green-500' },
-    { asset: 'USDC', cohort: 'whales', value: -450, color: 'bg-red-500' },
-    { asset: 'USDC', cohort: 'miners', value: 120, color: 'bg-green-400' },
-    { asset: 'USDC', cohort: 'smart-contracts', value: 420, color: 'bg-green-600' },
-    { asset: 'USDC', cohort: 'retail', value: -60, color: 'bg-red-400' },
-    
-    // BNB
-    { asset: 'BNB', cohort: 'exchanges', value: 150, color: 'bg-green-500' },
-    { asset: 'BNB', cohort: 'whales', value: -200, color: 'bg-red-500' },
-    { asset: 'BNB', cohort: 'miners', value: 75, color: 'bg-green-400' },
-    { asset: 'BNB', cohort: 'smart-contracts', value: 280, color: 'bg-green-600' },
-    { asset: 'BNB', cohort: 'retail', value: -35, color: 'bg-red-300' },
-    
-    // ADA
-    { asset: 'ADA', cohort: 'exchanges', value: 85, color: 'bg-green-400' },
-    { asset: 'ADA', cohort: 'whales', value: -110, color: 'bg-red-400' },
-    { asset: 'ADA', cohort: 'miners', value: 40, color: 'bg-green-300' },
-    { asset: 'ADA', cohort: 'smart-contracts', value: 160, color: 'bg-green-500' },
-    { asset: 'ADA', cohort: 'retail', value: -20, color: 'bg-red-300' },
-    
-    // AVAX
-    { asset: 'AVAX', cohort: 'exchanges', value: 70, color: 'bg-green-400' },
-    { asset: 'AVAX', cohort: 'whales', value: -95, color: 'bg-red-400' },
-    { asset: 'AVAX', cohort: 'miners', value: 35, color: 'bg-green-300' },
-    { asset: 'AVAX', cohort: 'smart-contracts', value: 140, color: 'bg-green-500' },
-    { asset: 'AVAX', cohort: 'retail', value: -18, color: 'bg-red-300' },
-    
-    // DOGE
-    { asset: 'DOGE', cohort: 'exchanges', value: 45, color: 'bg-green-400' },
-    { asset: 'DOGE', cohort: 'whales', value: -65, color: 'bg-red-400' },
-    { asset: 'DOGE', cohort: 'miners', value: 25, color: 'bg-green-300' },
-    { asset: 'DOGE', cohort: 'smart-contracts', value: 90, color: 'bg-green-500' },
-    { asset: 'DOGE', cohort: 'retail', value: -12, color: 'bg-red-300' },
-    
-    // MATIC
-    { asset: 'MATIC', cohort: 'exchanges', value: 55, color: 'bg-green-400' },
-    { asset: 'MATIC', cohort: 'whales', value: -75, color: 'bg-red-400' },
-    { asset: 'MATIC', cohort: 'miners', value: 30, color: 'bg-green-300' },
-    { asset: 'MATIC', cohort: 'smart-contracts', value: 110, color: 'bg-green-500' },
-    { asset: 'MATIC', cohort: 'retail', value: -15, color: 'bg-red-300' },
-    
-    // DOT
-    { asset: 'DOT', cohort: 'exchanges', value: 65, color: 'bg-green-400' },
-    { asset: 'DOT', cohort: 'whales', value: -85, color: 'bg-red-400' },
-    { asset: 'DOT', cohort: 'miners', value: 32, color: 'bg-green-300' },
-    { asset: 'DOT', cohort: 'smart-contracts', value: 130, color: 'bg-green-500' },
-    { asset: 'DOT', cohort: 'retail', value: -16, color: 'bg-red-300' },
-    
-    // LINK
-    { asset: 'LINK', cohort: 'exchanges', value: 75, color: 'bg-green-400' },
-    { asset: 'LINK', cohort: 'whales', value: -100, color: 'bg-red-400' },
-    { asset: 'LINK', cohort: 'miners', value: 38, color: 'bg-green-300' },
-    { asset: 'LINK', cohort: 'smart-contracts', value: 150, color: 'bg-green-500' },
-    { asset: 'LINK', cohort: 'retail', value: -19, color: 'bg-red-300' },
-    
-    // UNI
-    { asset: 'UNI', cohort: 'exchanges', value: 50, color: 'bg-green-400' },
-    { asset: 'UNI', cohort: 'whales', value: -70, color: 'bg-red-400' },
-    { asset: 'UNI', cohort: 'miners', value: 28, color: 'bg-green-300' },
-    { asset: 'UNI', cohort: 'smart-contracts', value: 100, color: 'bg-green-500' },
-    { asset: 'UNI', cohort: 'retail', value: -14, color: 'bg-red-300' },
-    
-    // ATOM
-    { asset: 'ATOM', cohort: 'exchanges', value: 60, color: 'bg-green-400' },
-    { asset: 'ATOM', cohort: 'whales', value: -80, color: 'bg-red-400' },
-    { asset: 'ATOM', cohort: 'miners', value: 35, color: 'bg-green-300' },
-    { asset: 'ATOM', cohort: 'smart-contracts', value: 120, color: 'bg-green-500' },
-    { asset: 'ATOM', cohort: 'retail', value: -17, color: 'bg-red-300' },
-    
-    // LTC
-    { asset: 'LTC', cohort: 'exchanges', value: 40, color: 'bg-green-400' },
-    { asset: 'LTC', cohort: 'whales', value: -55, color: 'bg-red-400' },
-    { asset: 'LTC', cohort: 'miners', value: 22, color: 'bg-green-300' },
-    { asset: 'LTC', cohort: 'smart-contracts', value: 80, color: 'bg-green-500' },
-    { asset: 'LTC', cohort: 'retail', value: -11, color: 'bg-red-300' },
-    
-    // ETC
-    { asset: 'ETC', cohort: 'exchanges', value: 35, color: 'bg-green-400' },
-    { asset: 'ETC', cohort: 'whales', value: -50, color: 'bg-red-400' },
-    { asset: 'ETC', cohort: 'miners', value: 20, color: 'bg-green-300' },
-    { asset: 'ETC', cohort: 'smart-contracts', value: 70, color: 'bg-green-500' },
-    { asset: 'ETC', cohort: 'retail', value: -10, color: 'bg-red-300' },
-    
-    // XLM
-    { asset: 'XLM', cohort: 'exchanges', value: 30, color: 'bg-green-400' },
-    { asset: 'XLM', cohort: 'whales', value: -45, color: 'bg-red-400' },
-    { asset: 'XLM', cohort: 'miners', value: 18, color: 'bg-green-300' },
-    { asset: 'XLM', cohort: 'smart-contracts', value: 60, color: 'bg-green-500' },
-    { asset: 'XLM', cohort: 'retail', value: -9, color: 'bg-red-300' },
-    
-    // ALGO
-    { asset: 'ALGO', cohort: 'exchanges', value: 25, color: 'bg-green-400' },
-    { asset: 'ALGO', cohort: 'whales', value: -40, color: 'bg-red-400' },
-    { asset: 'ALGO', cohort: 'miners', value: 15, color: 'bg-green-300' },
-    { asset: 'ALGO', cohort: 'smart-contracts', value: 50, color: 'bg-green-500' },
-    { asset: 'ALGO', cohort: 'retail', value: -8, color: 'bg-red-300' },
-  ];
+    return mockData;
+  };
+
+  const mockData = generateMockData();
 
   const assets = [
     'BTC', 'ETH', 'SOL', 'XRP', 'USDT', 'USDC', 'BNB', 'ADA', 'AVAX', 'DOGE',
@@ -186,7 +122,8 @@ export default function Heatmap({ onCellClick }: HeatmapProps) {
     <div className="w-full">
       {/* Compact Debug info */}
       <div className="mb-4 p-2 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded text-xs">
-        <strong>Heatmap:</strong> {mockData.length} data points • Top 19 cryptocurrencies • All values in millions (M)
+        <strong>Heatmap:</strong> {mockData.length} data points • Top 19 cryptocurrencies • All values in millions (M) • 
+        {startDate && endDate ? ` ${Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))} days` : ' 7 days'}
       </div>
 
       {/* Transposed Table - Cryptocurrencies as rows, Cohorts as columns */}

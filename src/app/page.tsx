@@ -8,13 +8,17 @@ import DateRangePicker from '@/components/DateRangePicker';
 import { COHORTS } from '@/lib/api';
 
 // Generate simple, guaranteed data
-const generateData = () => {
+const generateData = (startDate: Date, endDate: Date) => {
   const data: HeatmapData[] = [];
   const assets = [
     'BTC', 'ETH', 'SOL', 'XRP', 'USDT', 'USDC', 'BNB', 'ADA', 'AVAX', 'DOGE',
     'MATIC', 'DOT', 'LINK', 'UNI', 'ATOM', 'LTC', 'ETC', 'XLM', 'ALGO'
   ];
   const cohorts = ['exchanges', 'whales', 'miners', 'smart-contracts', 'retail'];
+  
+  // Calculate days difference to scale the data
+  const daysDiff = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+  const scaleFactor = daysDiff / 7; // Base scale on 7 days
   
   // Generate realistic values for each combination
   const flowRanges = {
@@ -47,7 +51,7 @@ const generateData = () => {
       data.push({
         asset,
         cohort,
-        value: Math.round(value),
+        value: Math.round(value * scaleFactor), // Scale the value based on date range
         date: new Date().toISOString(),
         yoyChange: Math.random() * 40 - 20,
       });
@@ -70,13 +74,13 @@ export default function HomePage() {
       setIsLoading(true);
       // Simulate loading delay
       await new Promise(resolve => setTimeout(resolve, 500));
-      const data = generateData();
+      const data = generateData(startDate, endDate);
       setHeatmapData(data);
       setIsLoading(false);
     };
 
     loadData();
-  }, []);
+  }, [startDate, endDate]);
 
   const handleCohortChange = (cohort: string, checked: boolean) => {
     if (checked) {
@@ -235,6 +239,8 @@ export default function HomePage() {
                     data={heatmapData}
                     selectedCohorts={selectedCohorts}
                     onCellClick={handleCellClick}
+                    startDate={startDate}
+                    endDate={endDate}
                   />
                 )}
               </div>
