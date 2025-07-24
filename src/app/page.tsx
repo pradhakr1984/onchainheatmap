@@ -139,8 +139,8 @@ export default function HomePage() {
                   ${totalInflow.toFixed(0)}M
                 </p>
               </div>
-              <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
-                <span className="text-green-600 dark:text-green-400 text-xl">↑</span>
+              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+                <span className="text-blue-600 dark:text-blue-400 text-xl">↑</span>
               </div>
             </div>
           </div>
@@ -153,8 +153,8 @@ export default function HomePage() {
                   ${totalOutflow.toFixed(0)}M
                 </p>
               </div>
-              <div className="w-12 h-12 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center">
-                <span className="text-red-600 dark:text-red-400 text-xl">↓</span>
+              <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center">
+                <span className="text-orange-600 dark:text-orange-400 text-xl">↓</span>
               </div>
             </div>
           </div>
@@ -163,14 +163,14 @@ export default function HomePage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Net Flow</p>
-                <p className={`text-2xl font-bold ${netFlow >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                <p className={`text-2xl font-bold ${netFlow >= 0 ? 'text-blue-600' : 'text-orange-600'}`}>
                   ${netFlow.toFixed(0)}M
                 </p>
               </div>
               <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                netFlow >= 0 ? 'bg-green-100 dark:bg-green-900' : 'bg-red-100 dark:bg-red-900'
+                netFlow >= 0 ? 'bg-blue-100 dark:bg-blue-900' : 'bg-orange-100 dark:bg-orange-900'
               }`}>
-                <span className={`text-xl ${netFlow >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                <span className={`text-xl ${netFlow >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-orange-600 dark:text-orange-400'}`}>
                   {netFlow >= 0 ? '↗' : '↘'}
                 </span>
               </div>

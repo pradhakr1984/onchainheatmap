@@ -64,16 +64,16 @@ export default function Heatmap({ onCellClick, startDate, endDate }: HeatmapProp
         const baseValue = Math.random() * (range[1] - range[0]) + range[0];
         const scaledValue = Math.round(baseValue * scaleFactor);
         
-        // Determine color based on value
+        // Determine color based on value - Colorblind-friendly scheme
         let color = 'bg-gray-400';
         if (scaledValue > 0) {
-          if (scaledValue > 200) color = 'bg-green-600';
-          else if (scaledValue > 100) color = 'bg-green-500';
-          else color = 'bg-green-400';
+          if (scaledValue > 200) color = 'bg-blue-600 text-white';
+          else if (scaledValue > 100) color = 'bg-blue-500 text-white';
+          else color = 'bg-blue-400 text-white';
         } else {
-          if (scaledValue < -200) color = 'bg-red-600';
-          else if (scaledValue < -100) color = 'bg-red-500';
-          else color = 'bg-red-400';
+          if (scaledValue < -200) color = 'bg-orange-600 text-white';
+          else if (scaledValue < -100) color = 'bg-orange-500 text-white';
+          else color = 'bg-orange-400 text-white';
         }
         
         mockData.push({
@@ -183,8 +183,8 @@ export default function Heatmap({ onCellClick, startDate, endDate }: HeatmapProp
                   })}
                   {/* Net Flow Summary */}
                   <td className={`p-2 text-center font-bold border-l border-gray-300 text-sm ${
-                    netFlow > 0 ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 
-                    netFlow < 0 ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' : 
+                    netFlow > 0 ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' : 
+                    netFlow < 0 ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200' : 
                     'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
                   }`}>
                     <div className="font-bold">
@@ -204,14 +204,14 @@ export default function Heatmap({ onCellClick, startDate, endDate }: HeatmapProp
         </table>
       </div>
 
-      {/* Enhanced Legend */}
+      {/* Enhanced Legend - Colorblind-friendly */}
       <div className="mt-4 flex items-center justify-center space-x-6 text-sm">
         <div className="flex items-center space-x-2">
-          <div className="w-4 h-4 bg-green-500 rounded"></div>
+          <div className="w-4 h-4 bg-blue-500 rounded"></div>
           <span className="text-gray-700 dark:text-gray-300 font-medium">Inflow (Money Entering)</span>
         </div>
         <div className="flex items-center space-x-2">
-          <div className="w-4 h-4 bg-red-500 rounded"></div>
+          <div className="w-4 h-4 bg-orange-500 rounded"></div>
           <span className="text-gray-700 dark:text-gray-300 font-medium">Outflow (Money Leaving)</span>
         </div>
         <div className="text-gray-500 dark:text-gray-400 text-xs">
