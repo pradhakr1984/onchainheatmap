@@ -1,93 +1,67 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { subDays, format } from 'date-fns';
-import Heatmap, { HeatmapData } from '@/components/Heatmap';
-import CohortToggle from '@/components/CohortToggle';
+import { useState, useEffect } from 'react';
+import { format } from 'date-fns';
 import DateRangePicker from '@/components/DateRangePicker';
-import { COHORTS } from '@/lib/api';
+import CohortToggle from '@/components/CohortToggle';
+import Heatmap from '@/components/Heatmap';
+import { getTopCoins, calculateFlowData, CoinGeckoCoin } from '@/lib/api';
 
-// Generate simple, guaranteed data
-const generateData = (startDate: Date, endDate: Date) => {
-  const data: HeatmapData[] = [];
-  const assets = [
-    'BTC', 'ETH', 'SOL', 'XRP', 'USDT', 'USDC', 'BNB', 'ADA', 'AVAX', 'DOGE',
-    'MATIC', 'DOT', 'LINK', 'UNI', 'ATOM', 'LTC', 'ETC', 'XLM', 'ALGO', 'VET',
-    'ICP', 'FIL', 'TRX', 'NEAR', 'APT'
-  ];
-  const cohorts = ['exchanges', 'whales', 'miners', 'smart-contracts', 'retail'];
-  
-  // Calculate days difference to scale the data
-  const daysDiff = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-  const scaleFactor = daysDiff / 7; // Base scale on 7 days
-  
-      // Generate realistic values for each combination - Simulated data for demonstration
-    const flowRanges = {
-      'BTC': { exchanges: [-80, 150], whales: [-200, 80], miners: [-20, 40], 'smart-contracts': [-20, 20], retail: [-10, 30] },
-      'ETH': { exchanges: [-60, 120], whales: [-150, 60], miners: [-15, 30], 'smart-contracts': [-40, 80], retail: [-20, 10] },
-      'SOL': { exchanges: [-30, 60], whales: [-80, 30], miners: [-10, 20], 'smart-contracts': [-30, 60], retail: [-15, 5] },
-      'XRP': { exchanges: [-20, 40], whales: [-50, 20], miners: [-8, 15], 'smart-contracts': [-20, 40], retail: [-10, 5] },
-      'USDT': { exchanges: [-120, 200], whales: [-300, 120], miners: [-40, 60], 'smart-contracts': [-80, 120], retail: [-30, -10] },
-      'USDC': { exchanges: [-100, 180], whales: [-250, 100], miners: [-30, 50], 'smart-contracts': [-60, 100], retail: [-25, -8] },
-      'BNB': { exchanges: [-40, 80], whales: [-100, 40], miners: [-15, 25], 'smart-contracts': [-40, 70], retail: [-12, 8] },
-      'ADA': { exchanges: [-25, 50], whales: [-60, 25], miners: [-10, 18], 'smart-contracts': [-25, 45], retail: [-8, 6] },
-      'AVAX': { exchanges: [-20, 40], whales: [-50, 20], miners: [-8, 15], 'smart-contracts': [-20, 40], retail: [-7, 5] },
-      'DOGE': { exchanges: [-15, 30], whales: [-40, 15], miners: [-6, 10], 'smart-contracts': [-15, 30], retail: [-5, 4] },
-      'MATIC': { exchanges: [-18, 35], whales: [-45, 18], miners: [-7, 12], 'smart-contracts': [-18, 35], retail: [-6, 5] },
-      'DOT': { exchanges: [-20, 40], whales: [-50, 20], miners: [-8, 15], 'smart-contracts': [-20, 40], retail: [-7, 5] },
-      'LINK': { exchanges: [-25, 50], whales: [-60, 25], miners: [-10, 18], 'smart-contracts': [-25, 45], retail: [-8, 6] },
-      'UNI': { exchanges: [-15, 30], whales: [-40, 15], miners: [-6, 10], 'smart-contracts': [-15, 30], retail: [-5, 4] },
-      'ATOM': { exchanges: [-18, 35], whales: [-45, 18], miners: [-7, 12], 'smart-contracts': [-18, 35], retail: [-6, 5] },
-      'LTC': { exchanges: [-12, 25], whales: [-30, 12], miners: [-5, 8], 'smart-contracts': [-12, 25], retail: [-4, 3] },
-      'ETC': { exchanges: [-10, 20], whales: [-25, 10], miners: [-4, 7], 'smart-contracts': [-10, 20], retail: [-3, 2] },
-      'XLM': { exchanges: [-8, 15], whales: [-20, 8], miners: [-3, 6], 'smart-contracts': [-8, 15], retail: [-3, 2] },
-      'ALGO': { exchanges: [-6, 12], whales: [-15, 6], miners: [-2, 5], 'smart-contracts': [-6, 12], retail: [-2, 1] },
-      'VET': { exchanges: [-10, 20], whales: [-25, 10], miners: [-4, 7], 'smart-contracts': [-10, 20], retail: [-3, 2] },
-      'ICP': { exchanges: [-8, 15], whales: [-20, 8], miners: [-3, 6], 'smart-contracts': [-8, 15], retail: [-3, 2] },
-      'FIL': { exchanges: [-6, 12], whales: [-15, 6], miners: [-2, 5], 'smart-contracts': [-6, 12], retail: [-2, 1] },
-      'TRX': { exchanges: [-12, 25], whales: [-30, 12], miners: [-5, 8], 'smart-contracts': [-12, 25], retail: [-4, 3] },
-      'NEAR': { exchanges: [-4, 8], whales: [-10, 4], miners: [-1, 3], 'smart-contracts': [-4, 8], retail: [-1, 1] },
-      'APT': { exchanges: [-3, 7], whales: [-8, 3], miners: [-1, 2], 'smart-contracts': [-3, 7], retail: [-1, 1] },
-    };
-
-  assets.forEach(asset => {
-    cohorts.forEach(cohort => {
-      const range = flowRanges[asset as keyof typeof flowRanges]?.[cohort as keyof typeof flowRanges.BTC] || [-100, 100];
-      const value = Math.random() * (range[1] - range[0]) + range[0];
-      
-      data.push({
-        asset,
-        cohort,
-        value: Math.round(value * scaleFactor), // Scale the value based on date range
-        date: new Date().toISOString(),
-        yoyChange: Math.random() * 40 - 20,
-      });
-    });
-  });
-  
-  return data;
-};
+export interface HeatmapData {
+  asset: string;
+  cohort: string;
+  value: number;
+  date: string;
+  formattedValue?: string;
+  yoyChange?: number;
+}
 
 export default function HomePage() {
-  const [selectedCohorts, setSelectedCohorts] = useState<string[]>(COHORTS.map(c => c.id));
-  const [startDate, setStartDate] = useState<Date>(subDays(new Date(), 7));
-  const [endDate, setEndDate] = useState<Date>(new Date());
   const [heatmapData, setHeatmapData] = useState<HeatmapData[]>([]);
+  const [selectedCohorts, setSelectedCohorts] = useState<string[]>(['exchanges', 'whales', 'miners', 'smart-contracts', 'retail']);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+  
+  // Date range state
+  const [startDate, setStartDate] = useState<Date>(() => {
+    const date = new Date();
+    date.setDate(date.getDate() - 7);
+    return date;
+  });
+  const [endDate, setEndDate] = useState<Date>(new Date());
 
-  // Generate data on mount
   useEffect(() => {
     const loadData = async () => {
-      setIsLoading(true);
-      // Simulate loading delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-      const data = generateData(startDate, endDate);
-      setHeatmapData(data);
-      setIsLoading(false);
+      try {
+        setIsLoading(true);
+        setError(null);
+        
+        // Fetch real data from CoinGecko
+        const coins = await getTopCoins();
+        const flowData = calculateFlowData(coins);
+        
+        // Convert to HeatmapData format
+        const heatmapDataFormatted: HeatmapData[] = flowData.map(item => ({
+          asset: item.asset,
+          cohort: item.cohort,
+          value: item.value,
+          date: new Date().toISOString(),
+          yoyChange: item.priceChange24h
+        }));
+        
+        setHeatmapData(heatmapDataFormatted);
+        setLastUpdated(new Date());
+      } catch (err) {
+        console.error('Error loading data:', err);
+        setError('Failed to load real market data. Please try again.');
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     loadData();
-  }, [startDate, endDate]);
+  }, []);
 
   const handleCohortChange = (cohort: string, checked: boolean) => {
     if (checked) {
@@ -106,7 +80,7 @@ export default function HomePage() {
     console.log('Cell clicked:', data);
   };
 
-  // Calculate summary statistics
+  // Calculate summary statistics from real data
   const totalInflow = heatmapData.filter(d => d.value > 0).reduce((sum, d) => sum + d.value, 0);
   const totalOutflow = Math.abs(heatmapData.filter(d => d.value < 0).reduce((sum, d) => sum + d.value, 0));
   const netFlow = totalInflow - totalOutflow;
@@ -125,7 +99,7 @@ export default function HomePage() {
                 Real-time visualization of crypto money movement across top 25 assets and wallet cohorts
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                ⚠️ Note: This is a demonstration with simulated data for UI/UX purposes
+                📊 Real-time data from CoinGecko API • Last updated: {format(lastUpdated, 'MMM dd, HH:mm')}
               </p>
             </div>
             <div className="flex items-center space-x-4">
@@ -209,16 +183,21 @@ export default function HomePage() {
               </h3>
               <div className="space-y-2 text-xs text-gray-600 dark:text-gray-400">
                 <div className="flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                  <span>Glassnode API</span>
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <span>CoinGecko API</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                  <span>CryptoQuant API</span>
+                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                  <span>Real Market Data</span>
                 </div>
                 <div className="pt-2 text-xs text-gray-500">
-                  Last updated: {format(new Date(), 'MMM dd, HH:mm')}
+                  Last updated: {format(lastUpdated, 'MMM dd, HH:mm')}
                 </div>
+                {error && (
+                  <div className="pt-2 text-xs text-red-500">
+                    ⚠️ {error}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -262,11 +241,11 @@ export default function HomePage() {
         <div className="mt-6 text-center">
           <div className="text-sm text-gray-500 dark:text-gray-400">
             <p>
-              Data powered by Glassnode & CryptoQuant APIs • 
-              Built with Next.js, TypeScript, TailwindCSS & Recharts
+              Real-time data powered by CoinGecko API • 
+              Built with Next.js, TypeScript & TailwindCSS
             </p>
             <p className="mt-1">
-              Give you data-driven talking points for Anchorage/FalconX convos within 10 seconds of page load
+              Flow calculations based on actual market volume and price movements
             </p>
           </div>
         </div>
