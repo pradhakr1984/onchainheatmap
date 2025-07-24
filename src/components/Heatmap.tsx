@@ -24,7 +24,8 @@ export default function Heatmap({ onCellClick, startDate, endDate }: HeatmapProp
   const generateMockData = () => {
     const assets = [
       'BTC', 'ETH', 'SOL', 'XRP', 'USDT', 'USDC', 'BNB', 'ADA', 'AVAX', 'DOGE',
-      'MATIC', 'DOT', 'LINK', 'UNI', 'ATOM', 'LTC', 'ETC', 'XLM', 'ALGO'
+      'MATIC', 'DOT', 'LINK', 'UNI', 'ATOM', 'LTC', 'ETC', 'XLM', 'ALGO', 'VET',
+      'ICP', 'FIL', 'TRX', 'NEAR', 'APT'
     ];
     const cohorts = ['exchanges', 'whales', 'miners', 'smart-contracts', 'retail'];
     
@@ -56,6 +57,12 @@ export default function Heatmap({ onCellClick, startDate, endDate }: HeatmapProp
       'ETC': { exchanges: [20, 45], whales: [-65, -30], miners: [10, 23], 'smart-contracts': [45, 80], retail: [-16, 6] },
       'XLM': { exchanges: [15, 40], whales: [-60, -25], miners: [8, 20], 'smart-contracts': [40, 70], retail: [-14, 5] },
       'ALGO': { exchanges: [12, 35], whales: [-55, -20], miners: [6, 18], 'smart-contracts': [35, 60], retail: [-12, 4] },
+      'VET': { exchanges: [20, 45], whales: [-70, -30], miners: [8, 20], 'smart-contracts': [35, 70], retail: [-15, 5] },
+      'ICP': { exchanges: [15, 40], whales: [-60, -25], miners: [6, 18], 'smart-contracts': [30, 60], retail: [-12, 4] },
+      'FIL': { exchanges: [12, 35], whales: [-55, -20], miners: [5, 16], 'smart-contracts': [25, 55], retail: [-10, 3] },
+      'TRX': { exchanges: [25, 50], whales: [-80, -35], miners: [10, 25], 'smart-contracts': [40, 75], retail: [-18, 6] },
+      'NEAR': { exchanges: [8, 30], whales: [-40, -15], miners: [4, 14], 'smart-contracts': [20, 45], retail: [-8, 2] },
+      'APT': { exchanges: [5, 25], whales: [-35, -10], miners: [3, 12], 'smart-contracts': [15, 40], retail: [-6, 2] },
     };
 
     assets.forEach(asset => {
@@ -124,7 +131,7 @@ export default function Heatmap({ onCellClick, startDate, endDate }: HeatmapProp
       <div className="mb-4 p-3 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded text-sm">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <div>
-            <strong>🌊 Fund Flow Heatmap:</strong> {mockData.length} data points • Top 19 cryptocurrencies • All values in millions (M) • 
+            <strong>🌊 Fund Flow Heatmap:</strong> {mockData.length} data points • Top 25 cryptocurrencies • All values in millions (M) • 
             {startDate && endDate ? ` ${Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))} days` : ' 7 days'}
           </div>
           <div className="flex flex-wrap gap-2 text-xs">

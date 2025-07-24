@@ -12,7 +12,8 @@ const generateData = (startDate: Date, endDate: Date) => {
   const data: HeatmapData[] = [];
   const assets = [
     'BTC', 'ETH', 'SOL', 'XRP', 'USDT', 'USDC', 'BNB', 'ADA', 'AVAX', 'DOGE',
-    'MATIC', 'DOT', 'LINK', 'UNI', 'ATOM', 'LTC', 'ETC', 'XLM', 'ALGO'
+    'MATIC', 'DOT', 'LINK', 'UNI', 'ATOM', 'LTC', 'ETC', 'XLM', 'ALGO', 'VET',
+    'ICP', 'FIL', 'TRX', 'NEAR', 'APT'
   ];
   const cohorts = ['exchanges', 'whales', 'miners', 'smart-contracts', 'retail'];
   
@@ -20,28 +21,34 @@ const generateData = (startDate: Date, endDate: Date) => {
   const daysDiff = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
   const scaleFactor = daysDiff / 7; // Base scale on 7 days
   
-  // Generate realistic values for each combination
-  const flowRanges = {
-    'BTC': { exchanges: [-200, 300], whales: [-500, 800], miners: [-100, 150], 'smart-contracts': [-50, 100], retail: [-20, 50] },
-    'ETH': { exchanges: [-150, 250], whales: [-400, 600], miners: [-80, 120], 'smart-contracts': [-200, 400], retail: [-30, 60] },
-    'SOL': { exchanges: [-80, 120], whales: [-200, 300], miners: [-40, 60], 'smart-contracts': [-100, 200], retail: [-15, 30] },
-    'XRP': { exchanges: [-60, 90], whales: [-150, 250], miners: [-30, 45], 'smart-contracts': [-80, 150], retail: [-10, 25] },
-    'USDT': { exchanges: [-300, 500], whales: [-800, 1200], miners: [-150, 200], 'smart-contracts': [-400, 800], retail: [-50, 100] },
-    'USDC': { exchanges: [-250, 400], whales: [-600, 900], miners: [-120, 180], 'smart-contracts': [-300, 600], retail: [-40, 80] },
-    'BNB': { exchanges: [-120, 180], whales: [-300, 450], miners: [-60, 90], 'smart-contracts': [-150, 300], retail: [-25, 50] },
-    'ADA': { exchanges: [-70, 100], whales: [-180, 280], miners: [-35, 55], 'smart-contracts': [-90, 180], retail: [-15, 30] },
-    'AVAX': { exchanges: [-60, 90], whales: [-150, 250], miners: [-30, 45], 'smart-contracts': [-80, 150], retail: [-12, 25] },
-    'DOGE': { exchanges: [-40, 60], whales: [-100, 150], miners: [-20, 30], 'smart-contracts': [-50, 100], retail: [-8, 20] },
-    'MATIC': { exchanges: [-50, 75], whales: [-120, 180], miners: [-25, 40], 'smart-contracts': [-65, 130], retail: [-10, 25] },
-    'DOT': { exchanges: [-55, 80], whales: [-140, 210], miners: [-28, 42], 'smart-contracts': [-70, 140], retail: [-12, 28] },
-    'LINK': { exchanges: [-65, 95], whales: [-160, 240], miners: [-32, 48], 'smart-contracts': [-80, 160], retail: [-14, 30] },
-    'UNI': { exchanges: [-45, 65], whales: [-110, 170], miners: [-22, 33], 'smart-contracts': [-55, 110], retail: [-9, 22] },
-    'ATOM': { exchanges: [-50, 75], whales: [-125, 190], miners: [-25, 40], 'smart-contracts': [-65, 130], retail: [-11, 25] },
-    'LTC': { exchanges: [-35, 50], whales: [-85, 130], miners: [-17, 26], 'smart-contracts': [-45, 90], retail: [-7, 18] },
-    'ETC': { exchanges: [-30, 45], whales: [-75, 115], miners: [-15, 23], 'smart-contracts': [-40, 80], retail: [-6, 16] },
-    'XLM': { exchanges: [-25, 40], whales: [-65, 100], miners: [-13, 20], 'smart-contracts': [-35, 70], retail: [-5, 14] },
-    'ALGO': { exchanges: [-20, 35], whales: [-55, 85], miners: [-11, 18], 'smart-contracts': [-30, 60], retail: [-4, 12] },
-  };
+      // Generate realistic values for each combination
+    const flowRanges = {
+      'BTC': { exchanges: [-200, 300], whales: [-500, 800], miners: [-100, 150], 'smart-contracts': [-50, 100], retail: [-20, 50] },
+      'ETH': { exchanges: [-150, 250], whales: [-400, 600], miners: [-80, 120], 'smart-contracts': [-200, 400], retail: [-30, 60] },
+      'SOL': { exchanges: [-80, 120], whales: [-200, 300], miners: [-40, 60], 'smart-contracts': [-100, 200], retail: [-15, 30] },
+      'XRP': { exchanges: [-60, 90], whales: [-150, 250], miners: [-30, 45], 'smart-contracts': [-80, 150], retail: [-10, 25] },
+      'USDT': { exchanges: [-300, 500], whales: [-800, 1200], miners: [-150, 200], 'smart-contracts': [-400, 800], retail: [-50, 100] },
+      'USDC': { exchanges: [-250, 400], whales: [-600, 900], miners: [-120, 180], 'smart-contracts': [-300, 600], retail: [-40, 80] },
+      'BNB': { exchanges: [-120, 180], whales: [-300, 450], miners: [-60, 90], 'smart-contracts': [-150, 300], retail: [-25, 50] },
+      'ADA': { exchanges: [-70, 100], whales: [-180, 280], miners: [-35, 55], 'smart-contracts': [-90, 180], retail: [-15, 30] },
+      'AVAX': { exchanges: [-60, 90], whales: [-150, 250], miners: [-30, 45], 'smart-contracts': [-80, 150], retail: [-12, 25] },
+      'DOGE': { exchanges: [-40, 60], whales: [-100, 150], miners: [-20, 30], 'smart-contracts': [-50, 100], retail: [-8, 20] },
+      'MATIC': { exchanges: [-50, 75], whales: [-120, 180], miners: [-25, 40], 'smart-contracts': [-65, 130], retail: [-10, 25] },
+      'DOT': { exchanges: [-55, 80], whales: [-140, 210], miners: [-28, 42], 'smart-contracts': [-70, 140], retail: [-12, 28] },
+      'LINK': { exchanges: [-65, 95], whales: [-160, 240], miners: [-32, 48], 'smart-contracts': [-80, 160], retail: [-14, 30] },
+      'UNI': { exchanges: [-45, 65], whales: [-110, 170], miners: [-22, 33], 'smart-contracts': [-55, 110], retail: [-9, 22] },
+      'ATOM': { exchanges: [-50, 75], whales: [-125, 190], miners: [-25, 40], 'smart-contracts': [-65, 130], retail: [-11, 25] },
+      'LTC': { exchanges: [-35, 50], whales: [-85, 130], miners: [-17, 26], 'smart-contracts': [-45, 90], retail: [-7, 18] },
+      'ETC': { exchanges: [-30, 45], whales: [-75, 115], miners: [-15, 23], 'smart-contracts': [-40, 80], retail: [-6, 16] },
+      'XLM': { exchanges: [-25, 40], whales: [-65, 100], miners: [-13, 20], 'smart-contracts': [-35, 70], retail: [-5, 14] },
+      'ALGO': { exchanges: [-20, 35], whales: [-55, 85], miners: [-11, 18], 'smart-contracts': [-30, 60], retail: [-4, 12] },
+      'VET': { exchanges: [-30, 45], whales: [-70, 110], miners: [-12, 20], 'smart-contracts': [-35, 70], retail: [-5, 15] },
+      'ICP': { exchanges: [-25, 40], whales: [-60, 95], miners: [-10, 18], 'smart-contracts': [-30, 60], retail: [-4, 12] },
+      'FIL': { exchanges: [-20, 35], whales: [-55, 85], miners: [-9, 16], 'smart-contracts': [-25, 55], retail: [-3, 10] },
+      'TRX': { exchanges: [-35, 50], whales: [-80, 120], miners: [-15, 25], 'smart-contracts': [-40, 75], retail: [-6, 18] },
+      'NEAR': { exchanges: [-15, 30], whales: [-40, 65], miners: [-8, 14], 'smart-contracts': [-20, 45], retail: [-2, 8] },
+      'APT': { exchanges: [-10, 25], whales: [-35, 55], miners: [-7, 12], 'smart-contracts': [-15, 40], retail: [-2, 6] },
+    };
 
   assets.forEach(asset => {
     cohorts.forEach(cohort => {
@@ -115,7 +122,7 @@ export default function HomePage() {
                 🌊 On-Chain Fund-Flow Heatmap
               </h1>
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                Real-time visualization of crypto money movement across top 19 assets and wallet cohorts
+                Real-time visualization of crypto money movement across top 25 assets and wallet cohorts
               </p>
             </div>
             <div className="flex items-center space-x-4">
