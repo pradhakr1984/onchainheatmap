@@ -179,7 +179,7 @@ export async function getRealExchangeFlows(asset: string): Promise<CryptoQuantFl
 }
 
 // Get real whale flow data (large transactions)
-export async function getRealWhaleFlows(asset: string): Promise<any[]> {
+export async function getRealWhaleFlows(): Promise<CryptoQuantFlowData[]> {
   if (!CRYPTOQUANT_API_KEY) {
     console.warn('CryptoQuant API key not found. Using fallback data.');
     return [];
@@ -203,7 +203,7 @@ export async function getRealWhaleFlows(asset: string): Promise<any[]> {
 }
 
 // Get real miner flow data
-export async function getRealMinerFlows(asset: string): Promise<any[]> {
+export async function getRealMinerFlows(): Promise<CryptoQuantFlowData[]> {
   if (!CRYPTOQUANT_API_KEY) {
     console.warn('CryptoQuant API key not found. Using fallback data.');
     return [];
@@ -311,8 +311,8 @@ export async function getRealFundFlows(): Promise<RealFlowData[]> {
       try {
         const [exchangeFlows, whaleFlows, minerFlows] = await Promise.all([
           getRealExchangeFlows(assetSymbol),
-          getRealWhaleFlows(assetSymbol),
-          getRealMinerFlows(assetSymbol)
+          getRealWhaleFlows(),
+          getRealMinerFlows()
         ]);
 
         // Add real exchange flows
