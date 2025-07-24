@@ -173,36 +173,36 @@ export default function Heatmap({ onCellClick }: HeatmapProps) {
         <strong>Heatmap:</strong> {mockData.length} data points • Top 19 cryptocurrencies • All values in millions (M)
       </div>
 
-      {/* Compact Table */}
+      {/* Transposed Table - Cryptocurrencies as rows, Cohorts as columns */}
       <div className="border border-gray-300 rounded-lg overflow-hidden shadow-sm overflow-x-auto">
-        <table className="w-full min-w-[1200px]">
+        <table className="w-full min-w-[800px]">
           {/* Header */}
           <thead>
             <tr className="bg-gray-100 dark:bg-gray-700">
               <th className="p-2 text-left font-bold text-gray-700 dark:text-gray-300 border-r border-gray-300 text-sm">
-                Cohort
+                Asset
               </th>
-              {assets.map(asset => (
-                <th key={asset} className="p-2 text-center font-bold text-gray-700 dark:text-gray-300 border-r border-gray-300 text-xs">
-                  {asset}
+              {cohorts.map(cohort => (
+                <th key={cohort} className="p-2 text-center font-bold text-gray-700 dark:text-gray-300 border-r border-gray-300 text-xs">
+                  {cohort.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
                 </th>
               ))}
             </tr>
           </thead>
           
-          {/* Data Rows */}
+          {/* Data Rows - Each cryptocurrency is a row */}
           <tbody>
-            {cohorts.map(cohort => (
-              <tr key={cohort} className="border-t border-gray-300">
+            {assets.map(asset => (
+              <tr key={asset} className="border-t border-gray-300">
                 <td className="p-2 font-bold text-gray-700 dark:text-gray-300 border-r border-gray-300 text-sm">
-                  {cohort.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                  {asset}
                 </td>
-                {assets.map(asset => {
+                {cohorts.map(cohort => {
                   const cellData = mockData.find(d => d.asset === asset && d.cohort === cohort);
                   
                   if (!cellData) {
                     return (
-                      <td key={asset} className="p-2 text-center text-gray-400 border-r border-gray-300 text-xs">
+                      <td key={cohort} className="p-2 text-center text-gray-400 border-r border-gray-300 text-xs">
                         N/A
                       </td>
                     );
@@ -210,7 +210,7 @@ export default function Heatmap({ onCellClick }: HeatmapProps) {
 
                   return (
                     <td 
-                      key={asset} 
+                      key={cohort} 
                       className={`p-2 text-center cursor-pointer hover:scale-105 transition-transform border-r border-gray-300 ${cellData.color} min-w-[80px]`}
                       onClick={() => onCellClick?.({ ...cellData, date: new Date().toISOString(), yoyChange: 0 })}
                     >
