@@ -121,9 +121,17 @@ export default function Heatmap({ onCellClick, startDate, endDate }: HeatmapProp
   return (
     <div className="w-full">
       {/* Compact Debug info */}
-      <div className="mb-4 p-2 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded text-xs">
-        <strong>Heatmap:</strong> {mockData.length} data points • Top 19 cryptocurrencies • All values in millions (M) • 
-        {startDate && endDate ? ` ${Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))} days` : ' 7 days'}
+      <div className="mb-4 p-3 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded text-sm">
+        <div className="flex items-center justify-between">
+          <div>
+            <strong>🌊 Fund Flow Heatmap:</strong> {mockData.length} data points • Top 19 cryptocurrencies • All values in millions (M) • 
+            {startDate && endDate ? ` ${Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))} days` : ' 7 days'}
+          </div>
+          <div className="text-xs">
+            <span className="bg-blue-500 text-white px-2 py-1 rounded mr-2">BLUE = INFLOW</span>
+            <span className="bg-orange-500 text-white px-2 py-1 rounded">ORANGE = OUTFLOW</span>
+          </div>
+        </div>
       </div>
 
       {/* Transposed Table - Cryptocurrencies as rows, Cohorts as columns */}
@@ -175,8 +183,11 @@ export default function Heatmap({ onCellClick, startDate, endDate }: HeatmapProp
                         <div className="text-white font-bold text-sm">
                           {cellData.value > 0 ? '+' : '-'}{formatValue(cellData.value)}
                         </div>
-                        <div className="text-white/90 text-xs">
-                          {cellData.value > 0 ? 'In' : 'Out'}
+                        <div className="text-white/90 text-xs font-semibold">
+                          {cellData.value > 0 ? 'INFLOW' : 'OUTFLOW'}
+                        </div>
+                        <div className="text-white/80 text-xs">
+                          {cellData.value > 0 ? 'Money In' : 'Money Out'}
                         </div>
                       </td>
                     );
@@ -191,10 +202,10 @@ export default function Heatmap({ onCellClick, startDate, endDate }: HeatmapProp
                       {netFlow > 0 ? '+' : ''}{formatValue(netFlow)}
                     </div>
                     <div className="text-xs opacity-75">
-                      {netFlow > 0 ? 'Net Inflow' : netFlow < 0 ? 'Net Outflow' : 'Balanced'}
+                      {netFlow > 0 ? 'NET INFLOW' : netFlow < 0 ? 'NET OUTFLOW' : 'BALANCED'}
                     </div>
                     <div className="text-xs opacity-50">
-                      (Exchanges + Retail)
+                      (External Flow)
                     </div>
                   </td>
                 </tr>
@@ -205,17 +216,32 @@ export default function Heatmap({ onCellClick, startDate, endDate }: HeatmapProp
       </div>
 
       {/* Enhanced Legend - Colorblind-friendly */}
-      <div className="mt-4 flex items-center justify-center space-x-6 text-sm">
-        <div className="flex items-center space-x-2">
-          <div className="w-4 h-4 bg-blue-500 rounded"></div>
-          <span className="text-gray-700 dark:text-gray-300 font-medium">Inflow (Money Entering)</span>
+      <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+        <div className="text-center mb-2">
+          <h4 className="font-bold text-gray-800 dark:text-gray-200 text-sm">📊 Flow Direction Guide</h4>
         </div>
-        <div className="flex items-center space-x-2">
-          <div className="w-4 h-4 bg-orange-500 rounded"></div>
-          <span className="text-gray-700 dark:text-gray-300 font-medium">Outflow (Money Leaving)</span>
+        <div className="flex items-center justify-center space-x-8 text-sm">
+          <div className="flex items-center space-x-2">
+            <div className="w-5 h-5 bg-blue-500 rounded flex items-center justify-center">
+              <span className="text-white text-xs font-bold">IN</span>
+            </div>
+            <div className="text-left">
+              <div className="text-gray-700 dark:text-gray-300 font-semibold">INFLOW</div>
+              <div className="text-gray-600 dark:text-gray-400 text-xs">Money entering this cohort</div>
+            </div>
+          </div>
+          <div className="flex items-center space-x-2">
+            <div className="w-5 h-5 bg-orange-500 rounded flex items-center justify-center">
+              <span className="text-white text-xs font-bold">OUT</span>
+            </div>
+            <div className="text-left">
+              <div className="text-gray-700 dark:text-gray-300 font-semibold">OUTFLOW</div>
+              <div className="text-gray-600 dark:text-gray-400 text-xs">Money leaving this cohort</div>
+            </div>
+          </div>
         </div>
-        <div className="text-gray-500 dark:text-gray-400 text-xs">
-          Click cells for details • External Flow = Exchanges + Retail (money entering/leaving ecosystem)
+        <div className="text-center mt-2 text-gray-500 dark:text-gray-400 text-xs">
+          💡 Click any cell for details • External Flow = Exchanges + Retail (money entering/leaving the crypto ecosystem)
         </div>
       </div>
     </div>
