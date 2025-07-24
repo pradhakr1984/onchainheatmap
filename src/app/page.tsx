@@ -21,33 +21,33 @@ const generateData = (startDate: Date, endDate: Date) => {
   const daysDiff = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
   const scaleFactor = daysDiff / 7; // Base scale on 7 days
   
-      // Generate realistic values for each combination - Updated to reflect real ETF/institutional flows
+      // Generate realistic values for each combination - Simulated data for demonstration
     const flowRanges = {
-      'BTC': { exchanges: [-800, 1200], whales: [-1200, 800], miners: [-200, 400], 'smart-contracts': [-200, 200], retail: [-100, 300] },
-      'ETH': { exchanges: [-600, 900], whales: [-900, 600], miners: [-150, 300], 'smart-contracts': [-400, 800], retail: [-200, 100] },
-      'SOL': { exchanges: [-300, 500], whales: [-600, 300], miners: [-100, 200], 'smart-contracts': [-300, 600], retail: [-150, 50] },
-      'XRP': { exchanges: [-200, 350], whales: [-450, 250], miners: [-80, 150], 'smart-contracts': [-200, 400], retail: [-100, 50] },
-      'USDT': { exchanges: [-1200, 1800], whales: [-2400, 1200], miners: [-400, 600], 'smart-contracts': [-800, 1200], retail: [-300, -100] },
-      'USDC': { exchanges: [-1000, 1500], whales: [-1800, 900], miners: [-300, 500], 'smart-contracts': [-600, 1000], retail: [-250, -80] },
-      'BNB': { exchanges: [-400, 600], whales: [-700, 450], miners: [-150, 250], 'smart-contracts': [-400, 700], retail: [-120, 80] },
-      'ADA': { exchanges: [-250, 400], whales: [-500, 280], miners: [-100, 180], 'smart-contracts': [-250, 450], retail: [-80, 60] },
-      'AVAX': { exchanges: [-200, 350], whales: [-450, 250], miners: [-80, 150], 'smart-contracts': [-200, 400], retail: [-70, 50] },
-      'DOGE': { exchanges: [-150, 250], whales: [-300, 150], miners: [-60, 100], 'smart-contracts': [-150, 300], retail: [-50, 40] },
-      'MATIC': { exchanges: [-180, 300], whales: [-400, 180], miners: [-70, 120], 'smart-contracts': [-180, 350], retail: [-60, 50] },
-      'DOT': { exchanges: [-200, 350], whales: [-450, 210], miners: [-80, 150], 'smart-contracts': [-200, 400], retail: [-70, 50] },
-      'LINK': { exchanges: [-250, 400], whales: [-500, 240], miners: [-100, 180], 'smart-contracts': [-250, 450], retail: [-80, 60] },
-      'UNI': { exchanges: [-150, 250], whales: [-300, 170], miners: [-60, 100], 'smart-contracts': [-150, 300], retail: [-50, 40] },
-      'ATOM': { exchanges: [-180, 300], whales: [-400, 190], miners: [-70, 120], 'smart-contracts': [-180, 350], retail: [-60, 50] },
-      'LTC': { exchanges: [-120, 200], whales: [-250, 130], miners: [-50, 80], 'smart-contracts': [-120, 250], retail: [-40, 30] },
-      'ETC': { exchanges: [-100, 180], whales: [-220, 115], miners: [-40, 70], 'smart-contracts': [-100, 220], retail: [-35, 25] },
-      'XLM': { exchanges: [-80, 150], whales: [-180, 100], miners: [-30, 60], 'smart-contracts': [-80, 180], retail: [-30, 20] },
-      'ALGO': { exchanges: [-60, 120], whales: [-150, 85], miners: [-25, 50], 'smart-contracts': [-60, 150], retail: [-25, 15] },
-      'VET': { exchanges: [-100, 180], whales: [-220, 110], miners: [-40, 70], 'smart-contracts': [-100, 220], retail: [-35, 25] },
-      'ICP': { exchanges: [-80, 150], whales: [-180, 95], miners: [-30, 60], 'smart-contracts': [-80, 180], retail: [-30, 20] },
-      'FIL': { exchanges: [-60, 120], whales: [-150, 85], miners: [-25, 50], 'smart-contracts': [-60, 150], retail: [-25, 15] },
-      'TRX': { exchanges: [-120, 200], whales: [-250, 120], miners: [-50, 80], 'smart-contracts': [-120, 250], retail: [-40, 30] },
-      'NEAR': { exchanges: [-40, 80], whales: [-100, 65], miners: [-15, 30], 'smart-contracts': [-40, 100], retail: [-15, 10] },
-      'APT': { exchanges: [-30, 70], whales: [-80, 55], miners: [-12, 25], 'smart-contracts': [-30, 80], retail: [-12, 8] },
+      'BTC': { exchanges: [-80, 150], whales: [-200, 80], miners: [-20, 40], 'smart-contracts': [-20, 20], retail: [-10, 30] },
+      'ETH': { exchanges: [-60, 120], whales: [-150, 60], miners: [-15, 30], 'smart-contracts': [-40, 80], retail: [-20, 10] },
+      'SOL': { exchanges: [-30, 60], whales: [-80, 30], miners: [-10, 20], 'smart-contracts': [-30, 60], retail: [-15, 5] },
+      'XRP': { exchanges: [-20, 40], whales: [-50, 20], miners: [-8, 15], 'smart-contracts': [-20, 40], retail: [-10, 5] },
+      'USDT': { exchanges: [-120, 200], whales: [-300, 120], miners: [-40, 60], 'smart-contracts': [-80, 120], retail: [-30, -10] },
+      'USDC': { exchanges: [-100, 180], whales: [-250, 100], miners: [-30, 50], 'smart-contracts': [-60, 100], retail: [-25, -8] },
+      'BNB': { exchanges: [-40, 80], whales: [-100, 40], miners: [-15, 25], 'smart-contracts': [-40, 70], retail: [-12, 8] },
+      'ADA': { exchanges: [-25, 50], whales: [-60, 25], miners: [-10, 18], 'smart-contracts': [-25, 45], retail: [-8, 6] },
+      'AVAX': { exchanges: [-20, 40], whales: [-50, 20], miners: [-8, 15], 'smart-contracts': [-20, 40], retail: [-7, 5] },
+      'DOGE': { exchanges: [-15, 30], whales: [-40, 15], miners: [-6, 10], 'smart-contracts': [-15, 30], retail: [-5, 4] },
+      'MATIC': { exchanges: [-18, 35], whales: [-45, 18], miners: [-7, 12], 'smart-contracts': [-18, 35], retail: [-6, 5] },
+      'DOT': { exchanges: [-20, 40], whales: [-50, 20], miners: [-8, 15], 'smart-contracts': [-20, 40], retail: [-7, 5] },
+      'LINK': { exchanges: [-25, 50], whales: [-60, 25], miners: [-10, 18], 'smart-contracts': [-25, 45], retail: [-8, 6] },
+      'UNI': { exchanges: [-15, 30], whales: [-40, 15], miners: [-6, 10], 'smart-contracts': [-15, 30], retail: [-5, 4] },
+      'ATOM': { exchanges: [-18, 35], whales: [-45, 18], miners: [-7, 12], 'smart-contracts': [-18, 35], retail: [-6, 5] },
+      'LTC': { exchanges: [-12, 25], whales: [-30, 12], miners: [-5, 8], 'smart-contracts': [-12, 25], retail: [-4, 3] },
+      'ETC': { exchanges: [-10, 20], whales: [-25, 10], miners: [-4, 7], 'smart-contracts': [-10, 20], retail: [-3, 2] },
+      'XLM': { exchanges: [-8, 15], whales: [-20, 8], miners: [-3, 6], 'smart-contracts': [-8, 15], retail: [-3, 2] },
+      'ALGO': { exchanges: [-6, 12], whales: [-15, 6], miners: [-2, 5], 'smart-contracts': [-6, 12], retail: [-2, 1] },
+      'VET': { exchanges: [-10, 20], whales: [-25, 10], miners: [-4, 7], 'smart-contracts': [-10, 20], retail: [-3, 2] },
+      'ICP': { exchanges: [-8, 15], whales: [-20, 8], miners: [-3, 6], 'smart-contracts': [-8, 15], retail: [-3, 2] },
+      'FIL': { exchanges: [-6, 12], whales: [-15, 6], miners: [-2, 5], 'smart-contracts': [-6, 12], retail: [-2, 1] },
+      'TRX': { exchanges: [-12, 25], whales: [-30, 12], miners: [-5, 8], 'smart-contracts': [-12, 25], retail: [-4, 3] },
+      'NEAR': { exchanges: [-4, 8], whales: [-10, 4], miners: [-1, 3], 'smart-contracts': [-4, 8], retail: [-1, 1] },
+      'APT': { exchanges: [-3, 7], whales: [-8, 3], miners: [-1, 2], 'smart-contracts': [-3, 7], retail: [-1, 1] },
     };
 
   assets.forEach(asset => {
@@ -124,6 +124,9 @@ export default function HomePage() {
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                 Real-time visualization of crypto money movement across top 25 assets and wallet cohorts
               </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                ⚠️ Note: This is a demonstration with simulated data for UI/UX purposes
+              </p>
             </div>
             <div className="flex items-center space-x-4">
               <div className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">
@@ -142,8 +145,8 @@ export default function HomePage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Inflow</p>
-                <p className="text-2xl font-bold text-green-600">
-                  ${totalInflow.toFixed(0)}M
+                <p className="text-2xl font-bold text-blue-600">
+                  ${totalInflow.toLocaleString()}M
                 </p>
               </div>
               <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
@@ -156,8 +159,8 @@ export default function HomePage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Outflow</p>
-                <p className="text-2xl font-bold text-red-600">
-                  ${totalOutflow.toFixed(0)}M
+                <p className="text-2xl font-bold text-orange-600">
+                  ${totalOutflow.toLocaleString()}M
                 </p>
               </div>
               <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center">
@@ -171,7 +174,7 @@ export default function HomePage() {
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Net Flow</p>
                 <p className={`text-2xl font-bold ${netFlow >= 0 ? 'text-blue-600' : 'text-orange-600'}`}>
-                  ${netFlow.toFixed(0)}M
+                  ${netFlow.toLocaleString()}M
                 </p>
               </div>
               <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
