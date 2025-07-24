@@ -5,7 +5,7 @@ import { format } from 'date-fns';
 import DateRangePicker from '@/components/DateRangePicker';
 import CohortToggle from '@/components/CohortToggle';
 import Heatmap from '@/components/Heatmap';
-import { getTopCoins, calculateFlowData, CoinGeckoCoin } from '@/lib/api';
+import { getTopCoins, calculateFlowData } from '@/lib/api';
 
 export interface HeatmapData {
   asset: string;

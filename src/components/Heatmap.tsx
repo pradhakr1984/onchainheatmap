@@ -119,11 +119,7 @@ export default function Heatmap({ onCellClick, startDate, endDate }: HeatmapProp
     return externalFlows.reduce((sum, d) => sum + d.value, 0);
   };
 
-  // Calculate total ecosystem flow (all cohorts) for comparison
-  const getTotalFlow = (asset: string) => {
-    const assetData = mockData.filter(d => d.asset === asset);
-    return assetData.reduce((sum, d) => sum + d.value, 0);
-  };
+
 
   return (
     <div className="w-full">

@@ -162,7 +162,11 @@ export async function getTopCoins(): Promise<CoinGeckoCoin[]> {
 }
 
 // Get historical price data for a specific coin
-export async function getHistoricalData(coinId: string, days: number): Promise<any> {
+export async function getHistoricalData(coinId: string, days: number): Promise<{
+  prices: [number, number][];
+  market_caps: [number, number][];
+  total_volumes: [number, number][];
+}> {
   try {
     const response = await fetch(
       `${COINGECKO_API_BASE}/coins/${coinId}/market_chart?vs_currency=usd&days=${days}`
