@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import { ResponsiveContainer, Surface } from 'recharts';
 import { format } from 'date-fns';
 
 export interface HeatmapData {
@@ -19,23 +18,27 @@ interface HeatmapProps {
   onCellClick?: (data: HeatmapData) => void;
 }
 
-// Custom color scale using d3-scale logic
+// Enhanced color scale with better visual appeal
 const getColorScale = (min: number, max: number) => {
   const absMax = Math.max(Math.abs(min), Math.abs(max));
   
   return (value: number) => {
-    if (value === 0) return '#374151'; // Neutral gray for zero
+    if (value === 0) return '#6B7280'; // Neutral gray for zero
     
-    const normalized = value / absMax;
+    const normalized = Math.abs(value) / absMax;
+    const intensity = Math.min(normalized, 1);
     
     if (value > 0) {
       // Green scale for positive values (inflows)
-      const intensity = Math.min(Math.abs(normalized), 1);
-      return `rgb(${Math.floor(34 * (1 - intensity))}, ${Math.floor(197 * intensity + 58)}, ${Math.floor(94 * intensity + 58)})`;
+      const greenIntensity = Math.floor(34 + (197 - 34) * intensity);
+      const blueIntensity = Math.floor(58 + (94 - 58) * intensity);
+      return `rgb(34, ${greenIntensity}, ${blueIntensity})`;
     } else {
       // Red scale for negative values (outflows)
-      const intensity = Math.min(Math.abs(normalized), 1);
-      return `rgb(${Math.floor(239 * intensity + 16)}, ${Math.floor(68 * intensity + 32)}, ${Math.floor(68 * intensity + 32)})`;
+      const redIntensity = Math.floor(16 + (239 - 16) * intensity);
+      const greenIntensity = Math.floor(32 + (68 - 32) * intensity);
+      const blueIntensity = Math.floor(32 + (68 - 32) * intensity);
+      return `rgb(${redIntensity}, ${greenIntensity}, ${blueIntensity})`;
     }
   };
 };
@@ -80,86 +83,101 @@ export default function Heatmap({ data, selectedCohorts, onCellClick }: HeatmapP
   }
 
   return (
-    <div className="w-full h-full min-h-[400px]">
-      <ResponsiveContainer width="100%" height="100%">
-        <Surface width={800} height={400}>
-          <div className="grid gap-1 p-4">
-            {/* Header row with asset names */}
-            <div className="grid grid-cols-1 gap-1 mb-2">
-              <div className="h-8"></div> {/* Empty corner */}
-              {assets.map(asset => (
-                <div key={asset} className="h-8 flex items-center justify-center text-xs font-medium text-gray-600 dark:text-gray-300">
-                  {asset}
-                </div>
-              ))}
+    <div className="w-full">
+      {/* Heatmap Grid */}
+      <div className="grid gap-2">
+        {/* Header row with asset names */}
+        <div className="grid grid-cols-1 gap-2 mb-4">
+          <div className="h-8"></div> {/* Empty corner */}
+          <div className="grid grid-cols-6 gap-2">
+            {assets.map(asset => (
+              <div key={asset} className="h-8 flex items-center justify-center text-sm font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                {asset}
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        {/* Data rows */}
+        {cohorts.map((cohort) => (
+          <div key={cohort} className="grid grid-cols-1 gap-2">
+            {/* Cohort label */}
+            <div className="h-12 flex items-center justify-start text-sm font-medium text-gray-700 dark:text-gray-300 pr-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <div className="flex items-center space-x-2">
+                <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                <span>{cohort.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
+              </div>
             </div>
             
-            {/* Data rows */}
-            {cohorts.map((cohort) => (
-              <div key={cohort} className="grid grid-cols-1 gap-1">
-                {/* Cohort label */}
-                <div className="h-8 flex items-center justify-start text-xs font-medium text-gray-600 dark:text-gray-300 pr-2">
-                  {cohort.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                </div>
+            {/* Data cells */}
+            <div className="grid grid-cols-6 gap-2">
+              {assets.map((asset) => {
+                const cellData = processedData.find(
+                  d => d.asset === asset && d.cohort === cohort
+                );
                 
-                {/* Data cells */}
-                {assets.map((asset) => {
-                  const cellData = processedData.find(
-                    d => d.asset === asset && d.cohort === cohort
-                  );
-                  
-                  if (!cellData) return <div key={asset} className="h-8" />;
-                  
-                  return (
+                if (!cellData) return <div key={asset} className="h-12 bg-gray-100 dark:bg-gray-700 rounded-lg" />;
+                
+                return (
+                  <div
+                    key={asset}
+                    className="h-12 relative group cursor-pointer"
+                    onClick={() => onCellClick?.(cellData)}
+                  >
                     <div
-                      key={asset}
-                      className="h-8 relative group cursor-pointer"
-                      onClick={() => onCellClick?.(cellData)}
+                      className="w-full h-full rounded-lg transition-all duration-200 hover:scale-105 hover:shadow-lg border border-gray-200 dark:border-gray-600"
+                      style={{ backgroundColor: cellData.color }}
                     >
-                      <div
-                        className="w-full h-full rounded transition-all duration-200 hover:scale-105 hover:shadow-lg"
-                        style={{ backgroundColor: cellData.color }}
-                      >
-                        <div className="w-full h-full flex items-center justify-center text-xs font-medium text-white">
+                      <div className="w-full h-full flex flex-col items-center justify-center text-xs font-semibold text-white p-1">
+                        <div className="text-center leading-tight">
                           {cellData.value > 0 ? '+' : ''}{cellData.formattedValue}
                         </div>
-                      </div>
-                      
-                      {/* Tooltip */}
-                      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
-                        <div className="font-medium">{asset} → {cohort}</div>
-                        <div className="text-gray-300">{cellData.formattedValue}</div>
-                        <div className="text-gray-400">
-                          {format(new Date(cellData.date), 'MMM dd, yyyy')}
-                        </div>
                         {cellData.yoyChange && (
-                          <div className={`text-xs ${cellData.yoyChange > 0 ? 'text-green-400' : 'text-red-400'}`}>
-                            YoY: {cellData.yoyChange > 0 ? '+' : ''}{cellData.yoyChange.toFixed(1)}%
+                          <div className={`text-xs ${cellData.yoyChange > 0 ? 'text-green-200' : 'text-red-200'}`}>
+                            {cellData.yoyChange > 0 ? '+' : ''}{cellData.yoyChange.toFixed(1)}%
                           </div>
                         )}
                       </div>
                     </div>
-                  );
-                })}
-              </div>
-            ))}
+                    
+                    {/* Enhanced Tooltip */}
+                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-3 px-4 py-3 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10 shadow-xl">
+                      <div className="font-semibold mb-1">{asset} → {cohort}</div>
+                      <div className="text-gray-300 mb-1">{cellData.formattedValue}</div>
+                      <div className="text-gray-400 text-xs mb-1">
+                        {format(new Date(cellData.date), 'MMM dd, yyyy')}
+                      </div>
+                      {cellData.yoyChange && (
+                        <div className={`text-xs font-medium ${cellData.yoyChange > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                          YoY: {cellData.yoyChange > 0 ? '+' : ''}{cellData.yoyChange.toFixed(1)}%
+                        </div>
+                      )}
+                      <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
-        </Surface>
-      </ResponsiveContainer>
+        ))}
+      </div>
       
-      {/* Legend */}
-      <div className="mt-4 flex items-center justify-center space-x-4 text-xs">
+      {/* Enhanced Legend */}
+      <div className="mt-8 flex items-center justify-center space-x-6 text-sm">
         <div className="flex items-center space-x-2">
           <div className="w-4 h-4 bg-green-500 rounded"></div>
-          <span className="text-gray-600 dark:text-gray-300">Inflow</span>
+          <span className="text-gray-700 dark:text-gray-300 font-medium">Inflow</span>
         </div>
         <div className="flex items-center space-x-2">
           <div className="w-4 h-4 bg-red-500 rounded"></div>
-          <span className="text-gray-600 dark:text-gray-300">Outflow</span>
+          <span className="text-gray-700 dark:text-gray-300 font-medium">Outflow</span>
         </div>
         <div className="flex items-center space-x-2">
           <div className="w-4 h-4 bg-gray-500 rounded"></div>
-          <span className="text-gray-600 dark:text-gray-300">Neutral</span>
+          <span className="text-gray-700 dark:text-gray-300 font-medium">Neutral</span>
+        </div>
+        <div className="text-gray-500 dark:text-gray-400 text-xs">
+          Hover for details • Click for explorer
         </div>
       </div>
     </div>
