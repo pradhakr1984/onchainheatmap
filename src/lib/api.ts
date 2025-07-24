@@ -115,12 +115,12 @@ export const COHORTS = [
   { id: 'retail', label: 'Retail', description: '< 1 BTC equivalent' },
 ]; 
 
-// Real API integration with CoinGecko and CryptoQuant
+// Real API integration with CoinGecko and Messari (Free alternatives)
 const COINGECKO_API_BASE = 'https://api.coingecko.com/api/v3';
-const CRYPTOQUANT_API_BASE = 'https://api.cryptoquant.com/v1';
+const MESSARI_API_BASE = 'https://data.messari.io/api/v1';
 
-// You'll need to get a free API key from https://cryptoquant.com/
-const CRYPTOQUANT_API_KEY = process.env.NEXT_PUBLIC_CRYPTOQUANT_API_KEY || '';
+// Messari API is completely free, no API key required
+const MESSARI_API_KEY = process.env.NEXT_PUBLIC_MESSARI_API_KEY || '';
 
 export interface CoinGeckoCoin {
   id: string;
@@ -136,11 +136,22 @@ export interface CoinGeckoCoin {
   total_supply: number;
 }
 
-export interface CryptoQuantFlowData {
-  exchange_inflow: number;
-  exchange_outflow: number;
-  net_flow: number;
-  timestamp: number;
+export interface MessariAssetData {
+  id: string;
+  symbol: string;
+  name: string;
+  metrics: {
+    market_data: {
+      price_usd: number;
+      market_cap_usd: number;
+      volume_last_24_hours: number;
+      percent_change_usd_24h: number;
+    };
+    on_chain_data: {
+      active_addresses_24h: number;
+      network_transactions_24h: number;
+    };
+  };
 }
 
 export interface RealFlowData {
@@ -154,75 +165,21 @@ export interface RealFlowData {
   dataSource: string;
 }
 
-// Get real exchange flow data from CryptoQuant
-export async function getRealExchangeFlows(asset: string): Promise<CryptoQuantFlowData[]> {
-  if (!CRYPTOQUANT_API_KEY) {
-    console.warn('CryptoQuant API key not found. Using fallback data.');
-    return [];
-  }
-
+// Get real asset data from Messari API (Free)
+export async function getMessariAssetData(assetId: string): Promise<MessariAssetData | null> {
   try {
-    const response = await fetch(
-      `${CRYPTOQUANT_API_BASE}/btc/flow/exchange?api_key=${CRYPTOQUANT_API_KEY}&limit=1`
-    );
+    const response = await fetch(`${MESSARI_API_BASE}/assets/${assetId}/metrics`);
     
     if (!response.ok) {
-      throw new Error(`CryptoQuant API request failed: ${response.status}`);
+      console.warn(`Messari API request failed for ${assetId}: ${response.status}`);
+      return null;
     }
     
     const data = await response.json();
-    return data.result || [];
+    return data.data;
   } catch (error) {
-    console.error('Error fetching CryptoQuant data:', error);
-    return [];
-  }
-}
-
-// Get real whale flow data (large transactions)
-export async function getRealWhaleFlows(): Promise<CryptoQuantFlowData[]> {
-  if (!CRYPTOQUANT_API_KEY) {
-    console.warn('CryptoQuant API key not found. Using fallback data.');
-    return [];
-  }
-
-  try {
-    const response = await fetch(
-      `${CRYPTOQUANT_API_BASE}/btc/flow/whale?api_key=${CRYPTOQUANT_API_KEY}&limit=1`
-    );
-    
-    if (!response.ok) {
-      throw new Error(`CryptoQuant API request failed: ${response.status}`);
-    }
-    
-    const data = await response.json();
-    return data.result || [];
-  } catch (error) {
-    console.error('Error fetching whale flow data:', error);
-    return [];
-  }
-}
-
-// Get real miner flow data
-export async function getRealMinerFlows(): Promise<CryptoQuantFlowData[]> {
-  if (!CRYPTOQUANT_API_KEY) {
-    console.warn('CryptoQuant API key not found. Using fallback data.');
-    return [];
-  }
-
-  try {
-    const response = await fetch(
-      `${CRYPTOQUANT_API_BASE}/btc/flow/miner?api_key=${CRYPTOQUANT_API_KEY}&limit=1`
-    );
-    
-    if (!response.ok) {
-      throw new Error(`CryptoQuant API request failed: ${response.status}`);
-    }
-    
-    const data = await response.json();
-    return data.result || [];
-  } catch (error) {
-    console.error('Error fetching miner flow data:', error);
-    return [];
+    console.error(`Error fetching Messari data for ${assetId}:`, error);
+    return null;
   }
 }
 
@@ -268,145 +225,125 @@ export async function getHistoricalData(coinId: string, days: number): Promise<{
   }
 }
 
-// Get real fund flow data combining multiple sources
+// Get real fund flow estimates based on Messari on-chain data
 export async function getRealFundFlows(): Promise<RealFlowData[]> {
   const flowData: RealFlowData[] = [];
   const coins = await getTopCoins();
   
-  // Map CoinGecko IDs to our asset symbols
+  // Map CoinGecko IDs to Messari IDs
   const assetMap: { [key: string]: string } = {
-    'bitcoin': 'BTC',
-    'ethereum': 'ETH',
-    'solana': 'SOL',
-    'ripple': 'XRP',
-    'tether': 'USDT',
-    'usd-coin': 'USDC',
-    'binancecoin': 'BNB',
-    'cardano': 'ADA',
-    'avalanche-2': 'AVAX',
-    'dogecoin': 'DOGE',
-    'matic-network': 'MATIC',
-    'polkadot': 'DOT',
-    'chainlink': 'LINK',
-    'uniswap': 'UNI',
-    'cosmos': 'ATOM',
-    'litecoin': 'LTC',
-    'ethereum-classic': 'ETC',
-    'stellar': 'XLM',
-    'algorand': 'ALGO',
-    'vechain': 'VET',
-    'internet-computer': 'ICP',
-    'filecoin': 'FIL',
-    'tron': 'TRX',
-    'near': 'NEAR',
-    'aptos': 'APT'
+    'bitcoin': 'bitcoin',
+    'ethereum': 'ethereum',
+    'solana': 'solana',
+    'ripple': 'ripple',
+    'tether': 'tether',
+    'usd-coin': 'usd-coin',
+    'binancecoin': 'binancecoin',
+    'cardano': 'cardano',
+    'avalanche-2': 'avalanche-2',
+    'dogecoin': 'dogecoin',
+    'matic-network': 'matic-network',
+    'polkadot': 'polkadot',
+    'chainlink': 'chainlink',
+    'uniswap': 'uniswap',
+    'cosmos': 'cosmos',
+    'litecoin': 'litecoin',
+    'ethereum-classic': 'ethereum-classic',
+    'stellar': 'stellar',
+    'algorand': 'algorand',
+    'vechain': 'vechain',
+    'internet-computer': 'internet-computer',
+    'filecoin': 'filecoin',
+    'tron': 'tron',
+    'near': 'near',
+    'aptos': 'aptos'
   };
 
   for (const coin of coins) {
-    const assetSymbol = assetMap[coin.id];
-    if (!assetSymbol) continue;
-
-    // Get real flow data for BTC (CryptoQuant has best BTC data)
-    if (assetSymbol === 'BTC') {
-      try {
-        const [exchangeFlows, whaleFlows, minerFlows] = await Promise.all([
-          getRealExchangeFlows(assetSymbol),
-          getRealWhaleFlows(),
-          getRealMinerFlows()
-        ]);
-
-        // Add real exchange flows
-        if (exchangeFlows.length > 0) {
-          const latest = exchangeFlows[0];
-          flowData.push({
-            asset: assetSymbol,
-            cohort: 'exchanges',
-            value: Math.round(latest.net_flow / 1000000), // Convert to millions
-            price: coin.current_price,
-            marketCap: coin.market_cap,
-            volume24h: coin.total_volume,
-            priceChange24h: coin.price_change_percentage_24h,
-            dataSource: 'CryptoQuant API'
-          });
-        }
-
-        // Add real whale flows
-        if (whaleFlows.length > 0) {
-          const latest = whaleFlows[0];
-          flowData.push({
-            asset: assetSymbol,
-            cohort: 'whales',
-            value: Math.round((latest.net_flow || 0) / 1000000),
-            price: coin.current_price,
-            marketCap: coin.market_cap,
-            volume24h: coin.total_volume,
-            priceChange24h: coin.price_change_percentage_24h,
-            dataSource: 'CryptoQuant API'
-          });
-        }
-
-        // Add real miner flows
-        if (minerFlows.length > 0) {
-          const latest = minerFlows[0];
-          flowData.push({
-            asset: assetSymbol,
-            cohort: 'miners',
-            value: Math.round((latest.net_flow || 0) / 1000000),
-            price: coin.current_price,
-            marketCap: coin.market_cap,
-            volume24h: coin.total_volume,
-            priceChange24h: coin.price_change_percentage_24h,
-            dataSource: 'CryptoQuant API'
-          });
-        }
-      } catch (error) {
-        console.error(`Error fetching real flows for ${assetSymbol}:`, error);
-      }
+    const assetSymbol = assetMap[coin.id]?.toUpperCase() || coin.symbol.toUpperCase();
+    const messariId = assetMap[coin.id];
+    
+    // Get real on-chain data from Messari
+    let messariData: MessariAssetData | null = null;
+    if (messariId) {
+      messariData = await getMessariAssetData(messariId);
     }
 
-    // For other assets, use volume-based estimates (clearly labeled)
     const cohorts = ['exchanges', 'whales', 'miners', 'smart-contracts', 'retail'];
     cohorts.forEach(cohort => {
-      if (assetSymbol === 'BTC' && ['exchanges', 'whales', 'miners'].includes(cohort)) {
-        // Skip - already added real data above
-        return;
-      }
-
-      // Volume-based estimates for other assets/cohorts
-      const volumeFlow = (coin.total_volume / 1000000) * 0.1;
       let value = 0;
+      let dataSource = 'Volume-based estimate';
 
-      switch (cohort) {
-        case 'exchanges':
-          value = volumeFlow * 1.0;
-          break;
-        case 'whales':
-          value = (coin.price_change_percentage_24h / 100) * coin.market_cap / 1000000 * 0.5;
-          break;
-        case 'miners':
-          value = volumeFlow * 0.1;
-          break;
-        case 'smart-contracts':
-          if (['ETH', 'SOL', 'AVAX', 'MATIC', 'DOT', 'LINK', 'UNI', 'ATOM'].includes(assetSymbol)) {
-            value = volumeFlow * 0.2;
-          } else {
+      // Use real on-chain data when available
+      if (messariData) {
+        const { market_data, on_chain_data } = messariData.metrics;
+        const volumeFlow = (market_data.volume_last_24_hours / 1000000) * 0.1;
+        const activeAddresses = on_chain_data.active_addresses_24h || 0;
+        const transactions = on_chain_data.network_transactions_24h || 0;
+
+        switch (cohort) {
+          case 'exchanges':
+            value = volumeFlow * 1.0;
+            dataSource = 'Messari API + Volume';
+            break;
+          case 'whales':
+            value = (market_data.percent_change_usd_24h / 100) * market_data.market_cap_usd / 1000000 * 0.5;
+            dataSource = 'Messari API + Price Change';
+            break;
+          case 'miners':
+            value = volumeFlow * 0.1;
+            dataSource = 'Messari API + Volume';
+            break;
+          case 'smart-contracts':
+            if (['ETH', 'SOL', 'AVAX', 'MATIC', 'DOT', 'LINK', 'UNI', 'ATOM'].includes(assetSymbol)) {
+              value = volumeFlow * 0.2 + (transactions / 10000);
+              dataSource = 'Messari API + On-chain Activity';
+            } else {
+              value = volumeFlow * 0.05;
+              dataSource = 'Messari API + Volume';
+            }
+            break;
+          case 'retail':
+            value = volumeFlow * 0.05 + (activeAddresses / 100000);
+            dataSource = 'Messari API + Active Addresses';
+            break;
+        }
+      } else {
+        // Fallback to volume-based estimates
+        const volumeFlow = (coin.total_volume / 1000000) * 0.1;
+        
+        switch (cohort) {
+          case 'exchanges':
+            value = volumeFlow * 1.0;
+            break;
+          case 'whales':
+            value = (coin.price_change_percentage_24h / 100) * coin.market_cap / 1000000 * 0.5;
+            break;
+          case 'miners':
+            value = volumeFlow * 0.1;
+            break;
+          case 'smart-contracts':
+            if (['ETH', 'SOL', 'AVAX', 'MATIC', 'DOT', 'LINK', 'UNI', 'ATOM'].includes(assetSymbol)) {
+              value = volumeFlow * 0.2;
+            } else {
+              value = volumeFlow * 0.05;
+            }
+            break;
+          case 'retail':
             value = volumeFlow * 0.05;
-          }
-          break;
-        case 'retail':
-          value = volumeFlow * 0.05;
-          break;
+            break;
+        }
       }
 
       flowData.push({
         asset: assetSymbol,
         cohort,
         value: Math.round(value),
-        price: coin.current_price,
-        marketCap: coin.market_cap,
-        volume24h: coin.total_volume,
-        priceChange24h: coin.price_change_percentage_24h,
-        dataSource: assetSymbol === 'BTC' ? 'CryptoQuant API' : 'Volume-based estimate'
+        price: messariData?.metrics.market_data.price_usd || coin.current_price,
+        marketCap: messariData?.metrics.market_data.market_cap_usd || coin.market_cap,
+        volume24h: messariData?.metrics.market_data.volume_last_24_hours || coin.total_volume,
+        priceChange24h: messariData?.metrics.market_data.percent_change_usd_24h || coin.price_change_percentage_24h,
+        dataSource
       });
     });
   }

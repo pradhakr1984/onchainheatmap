@@ -98,7 +98,7 @@ export default function HomePage() {
                 Real-time visualization of crypto money movement across top 25 assets and wallet cohorts
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                📊 Real fund flows from CryptoQuant API • Market data from CoinGecko • Last updated: {format(lastUpdated, 'MMM dd, HH:mm')}
+                📊 Real on-chain data from Messari API • Market data from CoinGecko • Last updated: {format(lastUpdated, 'MMM dd, HH:mm')}
               </p>
             </div>
             <div className="flex items-center space-x-4">
@@ -183,7 +183,7 @@ export default function HomePage() {
               <div className="space-y-2 text-xs text-gray-600 dark:text-gray-400">
                 <div className="flex items-center space-x-2">
                   <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <span>CryptoQuant API</span>
+                  <span>Messari API</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
@@ -191,7 +191,7 @@ export default function HomePage() {
                 </div>
                 <div className="flex items-center space-x-2">
                   <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                  <span>Real Fund Flows</span>
+                  <span>Real On-chain Data</span>
                 </div>
                 <div className="pt-2 text-xs text-gray-500">
                   Last updated: {format(lastUpdated, 'MMM dd, HH:mm')}
@@ -244,11 +244,11 @@ export default function HomePage() {
         <div className="mt-6 text-center">
           <div className="text-sm text-gray-500 dark:text-gray-400">
             <p>
-              Real fund flows from CryptoQuant API • Market data from CoinGecko • 
+              Real on-chain data from Messari API • Market data from CoinGecko • 
               Built with Next.js, TypeScript & TailwindCSS
             </p>
             <p className="mt-1">
-              BTC flows are real on-chain data, other assets use volume-based estimates
+              Enhanced estimates using real on-chain metrics (active addresses, transactions)
             </p>
           </div>
         </div>
