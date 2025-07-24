@@ -7,11 +7,13 @@ import CohortToggle from '@/components/CohortToggle';
 import DateRangePicker from '@/components/DateRangePicker';
 import { getAssets, COHORTS } from '@/lib/api';
 
-// Generate realistic mock data
-const generateMockData = (assets: string[], selectedCohorts: string[]) => {
+// Generate simple, guaranteed data
+const generateData = () => {
   const data: HeatmapData[] = [];
+  const assets = ['BTC', 'ETH', 'SOL', 'XRP', 'USDT', 'USDC'];
+  const cohorts = ['exchanges', 'whales', 'miners', 'smart-contracts', 'retail'];
   
-  // Realistic flow ranges for different assets and cohorts
+  // Generate realistic values for each combination
   const flowRanges = {
     'BTC': { exchanges: [-200, 300], whales: [-500, 800], miners: [-100, 150], 'smart-contracts': [-50, 100], retail: [-20, 50] },
     'ETH': { exchanges: [-150, 250], whales: [-400, 600], miners: [-80, 120], 'smart-contracts': [-200, 400], retail: [-30, 60] },
@@ -21,27 +23,21 @@ const generateMockData = (assets: string[], selectedCohorts: string[]) => {
     'USDC': { exchanges: [-250, 400], whales: [-600, 900], miners: [-120, 180], 'smart-contracts': [-300, 600], retail: [-40, 80] },
   };
 
-  console.log('Generating mock data for:', { assets, selectedCohorts });
-
   assets.forEach(asset => {
-    selectedCohorts.forEach(cohort => {
+    cohorts.forEach(cohort => {
       const range = flowRanges[asset as keyof typeof flowRanges]?.[cohort as keyof typeof flowRanges.BTC] || [-100, 100];
       const value = Math.random() * (range[1] - range[0]) + range[0];
       
-      const dataPoint = {
+      data.push({
         asset,
         cohort,
         value: Math.round(value),
         date: new Date().toISOString(),
-        yoyChange: Math.random() * 40 - 20, // Random YoY change between -20% and +20%
-      };
-      
-      data.push(dataPoint);
-      console.log('Generated data point:', dataPoint);
+        yoyChange: Math.random() * 40 - 20,
+      });
     });
   });
   
-  console.log('Total data points generated:', data.length);
   return data;
 };
 
@@ -51,39 +47,20 @@ export default function HomePage() {
   const [endDate, setEndDate] = useState<Date>(new Date());
   const [heatmapData, setHeatmapData] = useState<HeatmapData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [hasError, setHasError] = useState(false);
 
-  const assets = getAssets();
-  const startTimestamp = Math.floor(startDate.getTime() / 1000);
-  const endTimestamp = Math.floor(endDate.getTime() / 1000);
-
-  console.log('HomePage render:', { assets, selectedCohorts, heatmapData: heatmapData.length });
-
-  // Generate data when dependencies change
+  // Generate data on mount
   useEffect(() => {
-    const fetchData = async () => {
+    const loadData = async () => {
       setIsLoading(true);
-      setHasError(false);
-      
-      console.log('Starting data generation...');
-      
-      try {
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 800));
-        
-        const processedData = generateMockData(assets, selectedCohorts);
-        console.log('Setting heatmap data:', processedData.length, 'items');
-        setHeatmapData(processedData);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-        setHasError(true);
-      } finally {
-        setIsLoading(false);
-      }
+      // Simulate loading delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+      const data = generateData();
+      setHeatmapData(data);
+      setIsLoading(false);
     };
 
-    fetchData();
-  }, [assets, selectedCohorts, startTimestamp, endTimestamp]);
+    loadData();
+  }, []);
 
   const handleCohortChange = (cohort: string, checked: boolean) => {
     if (checked) {
@@ -100,7 +77,6 @@ export default function HomePage() {
 
   const handleCellClick = (data: HeatmapData) => {
     console.log('Cell clicked:', data);
-    // You can implement a modal or navigation to transaction explorer here
   };
 
   // Calculate summary statistics
@@ -227,9 +203,6 @@ export default function HomePage() {
                 <p className="text-sm text-gray-600 dark:text-gray-400">
                   Net USD flow (positive = inflow, negative = outflow) across assets and wallet cohorts
                 </p>
-                <div className="mt-2 text-xs text-gray-500">
-                  Debug: {heatmapData.length} data points loaded
-                </div>
               </div>
               
               <div className="p-6">
@@ -239,15 +212,6 @@ export default function HomePage() {
                       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
                       <div className="text-gray-500 dark:text-gray-400 font-medium">Loading fund flow data...</div>
                       <div className="text-gray-400 dark:text-gray-500 text-sm mt-2">Fetching real-time on-chain data</div>
-                    </div>
-                  </div>
-                ) : hasError ? (
-                  <div className="flex items-center justify-center h-64">
-                    <div className="text-center">
-                      <div className="text-red-500 text-lg mb-2">Error loading data</div>
-                      <div className="text-gray-500 dark:text-gray-400 text-sm">
-                        Please check your API keys and try again
-                      </div>
                     </div>
                   </div>
                 ) : (
