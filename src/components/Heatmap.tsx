@@ -166,6 +166,12 @@ export default function Heatmap({ onCellClick }: HeatmapProps) {
     return `$${absValue.toFixed(0)}M`;
   };
 
+  // Calculate net flow for each asset
+  const getNetFlow = (asset: string) => {
+    const assetData = mockData.filter(d => d.asset === asset);
+    return assetData.reduce((sum, d) => sum + d.value, 0);
+  };
+
   return (
     <div className="w-full">
       {/* Compact Debug info */}
@@ -187,60 +193,79 @@ export default function Heatmap({ onCellClick }: HeatmapProps) {
                   {cohort.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
                 </th>
               ))}
+              <th className="p-2 text-center font-bold text-gray-700 dark:text-gray-300 border-l border-gray-300 text-sm bg-gray-200 dark:bg-gray-600">
+                NET FLOW
+              </th>
             </tr>
           </thead>
           
           {/* Data Rows - Each cryptocurrency is a row */}
           <tbody>
-            {assets.map(asset => (
-              <tr key={asset} className="border-t border-gray-300">
-                <td className="p-2 font-bold text-gray-700 dark:text-gray-300 border-r border-gray-300 text-sm">
-                  {asset}
-                </td>
-                {cohorts.map(cohort => {
-                  const cellData = mockData.find(d => d.asset === asset && d.cohort === cohort);
-                  
-                  if (!cellData) {
+            {assets.map(asset => {
+              const netFlow = getNetFlow(asset);
+              return (
+                <tr key={asset} className="border-t border-gray-300">
+                  <td className="p-2 font-bold text-gray-700 dark:text-gray-300 border-r border-gray-300 text-sm">
+                    {asset}
+                  </td>
+                  {cohorts.map(cohort => {
+                    const cellData = mockData.find(d => d.asset === asset && d.cohort === cohort);
+                    
+                    if (!cellData) {
+                      return (
+                        <td key={cohort} className="p-2 text-center text-gray-400 border-r border-gray-300 text-xs">
+                          N/A
+                        </td>
+                      );
+                    }
+
                     return (
-                      <td key={cohort} className="p-2 text-center text-gray-400 border-r border-gray-300 text-xs">
-                        N/A
+                      <td 
+                        key={cohort} 
+                        className={`p-2 text-center cursor-pointer hover:scale-105 transition-transform border-r border-gray-300 ${cellData.color} min-w-[80px]`}
+                        onClick={() => onCellClick?.({ ...cellData, date: new Date().toISOString(), yoyChange: 0 })}
+                      >
+                        <div className="text-white font-bold text-sm">
+                          {cellData.value > 0 ? '+' : '-'}{formatValue(cellData.value)}
+                        </div>
+                        <div className="text-white/90 text-xs">
+                          {cellData.value > 0 ? 'In' : 'Out'}
+                        </div>
                       </td>
                     );
-                  }
-
-                  return (
-                    <td 
-                      key={cohort} 
-                      className={`p-2 text-center cursor-pointer hover:scale-105 transition-transform border-r border-gray-300 ${cellData.color} min-w-[80px]`}
-                      onClick={() => onCellClick?.({ ...cellData, date: new Date().toISOString(), yoyChange: 0 })}
-                    >
-                      <div className="text-white font-bold text-sm">
-                        {cellData.value > 0 ? '+' : '-'}{formatValue(cellData.value)}
-                      </div>
-                      <div className="text-white/90 text-xs">
-                        {cellData.value > 0 ? 'In' : 'Out'}
-                      </div>
-                    </td>
-                  );
-                })}
-              </tr>
-            ))}
+                  })}
+                  {/* Net Flow Summary */}
+                  <td className={`p-2 text-center font-bold border-l border-gray-300 text-sm ${
+                    netFlow > 0 ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 
+                    netFlow < 0 ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' : 
+                    'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+                  }`}>
+                    <div className="font-bold">
+                      {netFlow > 0 ? '+' : ''}{formatValue(netFlow)}
+                    </div>
+                    <div className="text-xs opacity-75">
+                      {netFlow > 0 ? 'Net Inflow' : netFlow < 0 ? 'Net Outflow' : 'Balanced'}
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
 
-      {/* Compact Legend */}
+      {/* Enhanced Legend */}
       <div className="mt-4 flex items-center justify-center space-x-6 text-sm">
         <div className="flex items-center space-x-2">
           <div className="w-4 h-4 bg-green-500 rounded"></div>
-          <span className="text-gray-700 dark:text-gray-300 font-medium">Inflow</span>
+          <span className="text-gray-700 dark:text-gray-300 font-medium">Inflow (Money Entering)</span>
         </div>
         <div className="flex items-center space-x-2">
           <div className="w-4 h-4 bg-red-500 rounded"></div>
-          <span className="text-gray-700 dark:text-gray-300 font-medium">Outflow</span>
+          <span className="text-gray-700 dark:text-gray-300 font-medium">Outflow (Money Leaving)</span>
         </div>
         <div className="text-gray-500 dark:text-gray-400 text-xs">
-          Click cells for details
+          Click cells for details • Net Flow shows total per cryptocurrency
         </div>
       </div>
     </div>
