@@ -21,21 +21,27 @@ const generateMockData = (assets: string[], selectedCohorts: string[]) => {
     'USDC': { exchanges: [-250, 400], whales: [-600, 900], miners: [-120, 180], 'smart-contracts': [-300, 600], retail: [-40, 80] },
   };
 
+  console.log('Generating mock data for:', { assets, selectedCohorts });
+
   assets.forEach(asset => {
     selectedCohorts.forEach(cohort => {
       const range = flowRanges[asset as keyof typeof flowRanges]?.[cohort as keyof typeof flowRanges.BTC] || [-100, 100];
       const value = Math.random() * (range[1] - range[0]) + range[0];
       
-      data.push({
+      const dataPoint = {
         asset,
         cohort,
         value: Math.round(value),
         date: new Date().toISOString(),
         yoyChange: Math.random() * 40 - 20, // Random YoY change between -20% and +20%
-      });
+      };
+      
+      data.push(dataPoint);
+      console.log('Generated data point:', dataPoint);
     });
   });
   
+  console.log('Total data points generated:', data.length);
   return data;
 };
 
@@ -51,17 +57,22 @@ export default function HomePage() {
   const startTimestamp = Math.floor(startDate.getTime() / 1000);
   const endTimestamp = Math.floor(endDate.getTime() / 1000);
 
+  console.log('HomePage render:', { assets, selectedCohorts, heatmapData: heatmapData.length });
+
   // Generate data when dependencies change
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
       setHasError(false);
       
+      console.log('Starting data generation...');
+      
       try {
         // Simulate API delay
         await new Promise(resolve => setTimeout(resolve, 800));
         
         const processedData = generateMockData(assets, selectedCohorts);
+        console.log('Setting heatmap data:', processedData.length, 'items');
         setHeatmapData(processedData);
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -216,6 +227,9 @@ export default function HomePage() {
                 <p className="text-sm text-gray-600 dark:text-gray-400">
                   Net USD flow (positive = inflow, negative = outflow) across assets and wallet cohorts
                 </p>
+                <div className="mt-2 text-xs text-gray-500">
+                  Debug: {heatmapData.length} data points loaded
+                </div>
               </div>
               
               <div className="p-6">
