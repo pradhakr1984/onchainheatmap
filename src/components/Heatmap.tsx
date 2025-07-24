@@ -122,14 +122,14 @@ export default function Heatmap({ onCellClick, startDate, endDate }: HeatmapProp
     <div className="w-full">
       {/* Compact Debug info */}
       <div className="mb-4 p-3 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded text-sm">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <div>
             <strong>🌊 Fund Flow Heatmap:</strong> {mockData.length} data points • Top 19 cryptocurrencies • All values in millions (M) • 
             {startDate && endDate ? ` ${Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))} days` : ' 7 days'}
           </div>
-          <div className="text-xs">
-            <span className="bg-blue-500 text-white px-2 py-1 rounded mr-2">BLUE = INFLOW</span>
-            <span className="bg-orange-500 text-white px-2 py-1 rounded">ORANGE = OUTFLOW</span>
+          <div className="flex flex-wrap gap-2 text-xs">
+            <span className="bg-blue-500 text-white px-3 py-1 rounded font-semibold whitespace-nowrap">BLUE = INFLOW</span>
+            <span className="bg-orange-500 text-white px-3 py-1 rounded font-semibold whitespace-nowrap">ORANGE = OUTFLOW</span>
           </div>
         </div>
       </div>
