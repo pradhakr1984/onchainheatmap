@@ -10,7 +10,10 @@ import { getAssets, COHORTS } from '@/lib/api';
 // Generate simple, guaranteed data
 const generateData = () => {
   const data: HeatmapData[] = [];
-  const assets = ['BTC', 'ETH', 'SOL', 'XRP', 'USDT', 'USDC'];
+  const assets = [
+    'BTC', 'ETH', 'SOL', 'XRP', 'USDT', 'USDC', 'BNB', 'ADA', 'AVAX', 'DOGE',
+    'MATIC', 'DOT', 'LINK', 'UNI', 'ATOM', 'LTC', 'ETC', 'XLM', 'ALGO'
+  ];
   const cohorts = ['exchanges', 'whales', 'miners', 'smart-contracts', 'retail'];
   
   // Generate realistic values for each combination
@@ -21,6 +24,19 @@ const generateData = () => {
     'XRP': { exchanges: [-60, 90], whales: [-150, 250], miners: [-30, 45], 'smart-contracts': [-80, 150], retail: [-10, 25] },
     'USDT': { exchanges: [-300, 500], whales: [-800, 1200], miners: [-150, 200], 'smart-contracts': [-400, 800], retail: [-50, 100] },
     'USDC': { exchanges: [-250, 400], whales: [-600, 900], miners: [-120, 180], 'smart-contracts': [-300, 600], retail: [-40, 80] },
+    'BNB': { exchanges: [-120, 180], whales: [-300, 450], miners: [-60, 90], 'smart-contracts': [-150, 300], retail: [-25, 50] },
+    'ADA': { exchanges: [-70, 100], whales: [-180, 280], miners: [-35, 55], 'smart-contracts': [-90, 180], retail: [-15, 30] },
+    'AVAX': { exchanges: [-60, 90], whales: [-150, 250], miners: [-30, 45], 'smart-contracts': [-80, 150], retail: [-12, 25] },
+    'DOGE': { exchanges: [-40, 60], whales: [-100, 150], miners: [-20, 30], 'smart-contracts': [-50, 100], retail: [-8, 20] },
+    'MATIC': { exchanges: [-50, 75], whales: [-120, 180], miners: [-25, 40], 'smart-contracts': [-65, 130], retail: [-10, 25] },
+    'DOT': { exchanges: [-55, 80], whales: [-140, 210], miners: [-28, 42], 'smart-contracts': [-70, 140], retail: [-12, 28] },
+    'LINK': { exchanges: [-65, 95], whales: [-160, 240], miners: [-32, 48], 'smart-contracts': [-80, 160], retail: [-14, 30] },
+    'UNI': { exchanges: [-45, 65], whales: [-110, 170], miners: [-22, 33], 'smart-contracts': [-55, 110], retail: [-9, 22] },
+    'ATOM': { exchanges: [-50, 75], whales: [-125, 190], miners: [-25, 40], 'smart-contracts': [-65, 130], retail: [-11, 25] },
+    'LTC': { exchanges: [-35, 50], whales: [-85, 130], miners: [-17, 26], 'smart-contracts': [-45, 90], retail: [-7, 18] },
+    'ETC': { exchanges: [-30, 45], whales: [-75, 115], miners: [-15, 23], 'smart-contracts': [-40, 80], retail: [-6, 16] },
+    'XLM': { exchanges: [-25, 40], whales: [-65, 100], miners: [-13, 20], 'smart-contracts': [-35, 70], retail: [-5, 14] },
+    'ALGO': { exchanges: [-20, 35], whales: [-55, 85], miners: [-11, 18], 'smart-contracts': [-30, 60], retail: [-4, 12] },
   };
 
   assets.forEach(asset => {
@@ -95,7 +111,7 @@ export default function HomePage() {
                 🌊 On-Chain Fund-Flow Heatmap
               </h1>
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                Real-time visualization of crypto money movement across major assets and wallet cohorts
+                Real-time visualization of crypto money movement across top 19 assets and wallet cohorts
               </p>
             </div>
             <div className="flex items-center space-x-4">
@@ -116,7 +132,7 @@ export default function HomePage() {
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Inflow</p>
                 <p className="text-2xl font-bold text-green-600">
-                  ${(totalInflow / 1000).toFixed(1)}B
+                  ${totalInflow.toFixed(0)}M
                 </p>
               </div>
               <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
@@ -130,7 +146,7 @@ export default function HomePage() {
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Outflow</p>
                 <p className="text-2xl font-bold text-red-600">
-                  ${(totalOutflow / 1000).toFixed(1)}B
+                  ${totalOutflow.toFixed(0)}M
                 </p>
               </div>
               <div className="w-12 h-12 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center">
@@ -144,7 +160,7 @@ export default function HomePage() {
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Net Flow</p>
                 <p className={`text-2xl font-bold ${netFlow >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  ${(netFlow / 1000).toFixed(1)}B
+                  ${netFlow.toFixed(0)}M
                 </p>
               </div>
               <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
@@ -158,9 +174,9 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 xl:grid-cols-5 gap-8">
           {/* Sidebar Controls */}
-          <div className="lg:col-span-1 space-y-6">
+          <div className="xl:col-span-1 space-y-6">
             <DateRangePicker
               startDate={startDate}
               endDate={endDate}
@@ -194,7 +210,7 @@ export default function HomePage() {
           </div>
 
           {/* Main Heatmap */}
-          <div className="lg:col-span-3">
+          <div className="xl:col-span-4">
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
               <div className="p-6 border-b border-gray-200 dark:border-gray-700">
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
@@ -205,7 +221,7 @@ export default function HomePage() {
                 </p>
               </div>
               
-              <div className="p-6">
+              <div className="p-8">
                 {isLoading ? (
                   <div className="flex items-center justify-center h-64">
                     <div className="text-center">

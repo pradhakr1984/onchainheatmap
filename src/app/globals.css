@@ -36,14 +36,15 @@
     @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800;
   }
   
-  /* Transition utilities */
-  .transition-all {
-    @apply transition-all duration-200 ease-in-out;
-  }
-  
   /* Custom heatmap cell styles */
   .heatmap-cell {
-    @apply transition-all duration-200 hover:scale-105 hover:shadow-lg cursor-pointer;
+    transition: all 0.2s ease-in-out;
+  }
+  
+  .heatmap-cell:hover {
+    transform: scale(1.05);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    cursor: pointer;
   }
   
   /* Loading states */
