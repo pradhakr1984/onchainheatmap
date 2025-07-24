@@ -166,8 +166,18 @@ export default function Heatmap({ onCellClick }: HeatmapProps) {
     return `$${absValue.toFixed(0)}M`;
   };
 
-  // Calculate net flow for each asset
+  // Calculate net flow for each asset - focusing on external flows
   const getNetFlow = (asset: string) => {
+    const assetData = mockData.filter(d => d.asset === asset);
+    
+    // Focus on external flows (exchanges and retail) as they represent money entering/leaving the ecosystem
+    // Internal transfers between whales, miners, and smart contracts are excluded from net flow
+    const externalFlows = assetData.filter(d => d.cohort === 'exchanges' || d.cohort === 'retail');
+    return externalFlows.reduce((sum, d) => sum + d.value, 0);
+  };
+
+  // Calculate total ecosystem flow (all cohorts) for comparison
+  const getTotalFlow = (asset: string) => {
     const assetData = mockData.filter(d => d.asset === asset);
     return assetData.reduce((sum, d) => sum + d.value, 0);
   };
@@ -194,7 +204,7 @@ export default function Heatmap({ onCellClick }: HeatmapProps) {
                 </th>
               ))}
               <th className="p-2 text-center font-bold text-gray-700 dark:text-gray-300 border-l border-gray-300 text-sm bg-gray-200 dark:bg-gray-600">
-                NET FLOW
+                EXTERNAL FLOW
               </th>
             </tr>
           </thead>
@@ -246,6 +256,9 @@ export default function Heatmap({ onCellClick }: HeatmapProps) {
                     <div className="text-xs opacity-75">
                       {netFlow > 0 ? 'Net Inflow' : netFlow < 0 ? 'Net Outflow' : 'Balanced'}
                     </div>
+                    <div className="text-xs opacity-50">
+                      (Exchanges + Retail)
+                    </div>
                   </td>
                 </tr>
               );
@@ -265,7 +278,7 @@ export default function Heatmap({ onCellClick }: HeatmapProps) {
           <span className="text-gray-700 dark:text-gray-300 font-medium">Outflow (Money Leaving)</span>
         </div>
         <div className="text-gray-500 dark:text-gray-400 text-xs">
-          Click cells for details • Net Flow shows total per cryptocurrency
+          Click cells for details • External Flow = Exchanges + Retail (money entering/leaving ecosystem)
         </div>
       </div>
     </div>
